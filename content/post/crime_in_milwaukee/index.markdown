@@ -21,7 +21,7 @@ projects: []
 share: false
 reading_time: false
 commentable: true
-draft: true
+draft: false
 ---
 
 {{% alert note %}}
