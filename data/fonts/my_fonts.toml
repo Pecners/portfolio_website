@@ -1,0 +1,15 @@
+# Font style metadata
+name = "my_fonts"
+
+# Optional Google font URL
+google_fonts = "family=EB+Garamond&Roboto+Mono"
+
+# Font families
+heading_font = "EB Garamond"
+body_font = "EB Garamond"
+nav_font = "EB Garamond"
+mono_font = "Roboto Mono"
+
+# Font size
+font_size = "20"
+font_size_small = "16"

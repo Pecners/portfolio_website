@@ -1,0 +1,349 @@
+---
+title: Recommendation to Leadership
+author: Spencer Schien
+date: '2020-03-14'
+slug: recommendation
+categories:
+  - Interview Case Study
+tags: 
+  - RStats
+  - Nonprofit
+subtitle: ''
+summary: 'Third of three posts on a case study I completed as part of a Data Scientist interview process.'
+authors: [admin]
+lastmod: '2020-03-14T17:54:00-05:00'
+featured: no
+image:
+  caption: ''
+  focal_point: ''
+  preview_only: yes
+projects: []
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
+library(tidyverse)
+library(knitr)
+```
+
+# Recommendation
+
+The optimal distribution of development staff is to **maximize focus on *Giving Society* giving, especially in startup years** (i.e. first years of implementation for *both* types of giving).
+
+# The Problem
+
+The purpose of this report is to provide a recommendation regarding the optimal distribution of Shocjin Nonprofit development staff between corporate giving and *Giving Society* giving.
+
+To make this recommendation, the Data Science team conducted a survey to collect giving data from Shocjin Nonprofit sites  With this data, we have been able to run simulations that recreate giving ranges we can expect from the two giving categories.  
+
+Our recommendation is based on these ranges and the probability of a site not meeting a benchmark amount of total giving in a year, which we are considering a loss.
+
+```{r}
+library(EnvStats) # for truncated distributions
+library(tidyverse) # for data manipulation and visualization
+library(scales) # for setting percentages and scales, specifically in visuals
+library(ggbeeswarm) # for creating the violin-like dot plot
+library(ggalt) # for dumbbell plot
+set.seed(123)
+sim_cos <- function() {
+  new_cos <- round(rnormTrunc(1, mean = 20, sd = 10/6, min = 15, max = 25), 0)
+  success_cos <- round(new_cos * .25, 0)
+  
+  avg_cos <- mean(c(log(50000), log(1000000)))
+  stdev_cos <- log(((1000000) - (50000))/success_cos)
+  
+  if(is.null(dis_cos)) {
+    dis_cos <- rlnormTrunc(success_cos, avg_cos, stdev_cos, min = 50000, max = 1000000)
+    dis_cos <- tibble(amount = dis_cos, N = 1, 
+                      years_extended = rpois(success_cos, 2) + 1,
+                  total_commitment = amount * years_extended)
+  } else {
+    dis_cos1 <- rlnormTrunc(success_cos, avg_cos, stdev_cos, min = 50000, max = 1000000)
+    dis_cos1 <- tibble(amount = dis_cos1, N = max(dis_cos$N) + 1, 
+                       years_extended = rpois(success_cos, 2) + 1,
+                   total_commitment = amount * years_extended) 
+  }
+  dis_cos <<- bind_rows(dis_cos, dis_cos1) %>%
+    # add the columns to track giving over the years
+    mutate(start_year = i,
+           year_1 = ifelse(start_year <= 0 & start_year + years_extended >= 1, amount, 0),
+           year_2 = ifelse(start_year <= 1 & start_year + years_extended >= 2, amount, 0),
+           year_3 = ifelse(start_year <= 2 & start_year + years_extended >= 3, amount, 0),
+           year_4 = ifelse(start_year <= 3 & start_year + years_extended >= 4, amount, 0),
+           year_5 = ifelse(start_year <= 4 & start_year + years_extended >= 5, amount, 0),
+           year_6 = ifelse(start_year <= 5 & start_year + years_extended >= 6, amount, 0),
+           year_7 = ifelse(start_year <= 6 & start_year + years_extended >= 7, amount, 0),
+           year_8 = ifelse(start_year <= 7 & start_year + years_extended >= 8, amount, 0),
+           year_9 = ifelse(start_year <= 8 & start_year + years_extended >= 9, amount, 0),
+           year_10 = ifelse(start_year <= 9 & start_year + years_extended >= 10, amount, 0))
+}
+
+# Initialize new value that will be the full dataframe
+cos <- NULL
+
+# loop over 10 years starting with 0
+# to facilitate addition of `years_extended`
+for(i in 0:9) {
+  
+  # re-initialize inside the loop
+  dis_cos <- dis_cos1 <- NULL
+  
+  # Monte Carlo
+  replicate(1000, sim_cos())
+  
+  # Append each round of simulations
+  cos <- bind_rows(cos, dis_cos)
+}
+
+cos_years <- cos %>%
+  group_by(N) %>%
+  summarise_at(vars(year_1:year_10), sum) %>%
+  pivot_longer(cols = c(2:11), names_to = "year", values_to = "year_amount") %>%
+  modify_at("year", fct_relevel, levels = c("year_1",
+                                            "year_2",
+                                            "year_3",
+                                            "year_4",
+                                            "year_5",
+                                            "year_6",
+                                            "year_7",
+                                            "year_8",
+                                            "year_9",
+                                            "year_10")) %>%
+  group_by(N, year) %>%
+  summarise(year_total = sum(year_amount)) %>%
+  mutate(cum_total = cumsum(year_total),
+         category = "cos")
+
+cos_latter <- cos %>%
+  group_by(N) %>%
+  summarise_at(vars(year_1:year_10), sum) %>%
+  pivot_longer(cols = c(2:11), names_to = "year", values_to = "year_amount") %>%
+  modify_at("year", fct_relevel, levels = c("year_1",
+                                            "year_2",
+                                            "year_3",
+                                            "year_4",
+                                            "year_5",
+                                            "year_6",
+                                            "year_7",
+                                            "year_8",
+                                            "year_9",
+                                            "year_10")) %>%
+  mutate(year = as.numeric(year)) %>%
+  filter(year > 5)
+
+sim_GS <- function() {
+  new_GS <- round(rnormTrunc(1, mean = 350, sd = 300/6, min = 200, max = 500), 0)
+  success <- round(new_GS * .5, 0)
+  
+  min <- 5000
+  max <- 50000
+  avg <- mean(c(log(5000), log(50000)))
+  stdev <- log(((50000) - (5000))/success)
+  
+  if(is.null(dis)) {
+    dis <- rlnormTrunc(success, avg, stdev, min = min, max = max)
+    dis <- tibble(amount = dis, N = 1, years_extended = sample(c(1, 2, 3), 
+                                                               size = success, 
+                                                               prob = c(.5, .4, .1), 
+                                                               replace = TRUE),
+                  total_commitment = amount * years_extended)
+  } else {
+    dis1 <- rlnormTrunc(success, avg, stdev, min = min, max = max)
+    dis1 <- tibble(amount = dis1, N = max(dis$N) + 1, 
+                   years_extended = sample(c(1, 2, 3), 
+                                           size = success, 
+                                           prob = c(.5, .4, .1), 
+                                           replace = TRUE),
+                   total_commitment = amount * years_extended) 
+  }
+  dis <<- bind_rows(dis, dis1) %>%
+    mutate(start_year = i,
+           year_1 = ifelse(start_year <= 0 & start_year + years_extended >= 1, amount, 0),
+           year_2 = ifelse(start_year <= 1 & start_year + years_extended >= 2, amount, 0),
+           year_3 = ifelse(start_year <= 2 & start_year + years_extended >= 3, amount, 0),
+           year_4 = ifelse(start_year <= 3 & start_year + years_extended >= 4, amount, 0),
+           year_5 = ifelse(start_year <= 4 & start_year + years_extended >= 5, amount, 0),
+           year_6 = ifelse(start_year <= 5 & start_year + years_extended >= 6, amount, 0),
+           year_7 = ifelse(start_year <= 6 & start_year + years_extended >= 7, amount, 0),
+           year_8 = ifelse(start_year <= 7 & start_year + years_extended >= 8, amount, 0),
+           year_9 = ifelse(start_year <= 8 & start_year + years_extended >= 9, amount, 0),
+           year_10 = ifelse(start_year <= 9 & start_year + years_extended >= 10, amount, 0))
+}
+
+GS <- NULL
+
+for(i in 0:9) {
+  dis <- dis1 <- NULL
+  replicate(1000, sim_GS())
+  GS <- bind_rows(GS, dis)
+  
+}
+
+GS_years <- GS %>%
+  group_by(N) %>%
+  summarise_at(vars(year_1:year_10), sum) %>%
+  pivot_longer(cols = c(2:11), names_to = "year", values_to = "year_amount") %>%
+  group_by(N, year) %>%
+  summarise(year_total = sum(year_amount)) %>%
+  mutate(cum_total = cumsum(year_total),
+         category = "GS") %>%
+  modify_at("year", fct_relevel, levels = c("year_1",
+                                            "year_2",
+                                            "year_3",
+                                            "year_4",
+                                            "year_5",
+                                            "year_6",
+                                            "year_7",
+                                            "year_8",
+                                            "year_9",
+                                            "year_10"))
+
+GS_latter <- GS %>%
+  group_by(N) %>%
+  summarise_at(vars(year_1:year_10), sum) %>%
+  pivot_longer(cols = c(2:11), names_to = "year", values_to = "year_amount") %>%
+  modify_at("year", fct_relevel, levels = c("year_1",
+                                            "year_2",
+                                            "year_3",
+                                            "year_4",
+                                            "year_5",
+                                            "year_6",
+                                            "year_7",
+                                            "year_8",
+                                            "year_9",
+                                            "year_10")) %>%
+  mutate(year = as.numeric(year)) %>%
+  filter(year > 5)
+
+cos_avg <- mean(cos_latter$year_amount)
+GS_avg <- mean(GS_latter$year_amount)
+
+avg_df <- tibble(category = c("Corporate", "Giving Society"),
+                 amount = c(cos_avg, GS_avg))
+
+# define 95% range of data
+quant_cos <- quantile(cos_latter$year_amount, c(.025, .975))
+quant_GS <- quantile(GS_latter$year_amount, c(.025, .975))
+
+# combine in a dataframe for visualization
+quants_df <- tibble(Corporate = quant_cos, "Giving Society" = quant_GS) %>%
+  pivot_longer(1:2, names_to = "category", values_to = "amount") %>%
+  group_by(category) %>%
+  summarise(xend = min(amount),
+            x = max(amount))
+
+
+
+quants_df %>%
+  ggplot(aes(y = "")) +
+  geom_dumbbell(aes(xend = xend, x = x), size_x = 3, size_xend = 3) +
+  geom_vline(data = avg_df, aes(xintercept = amount), linetype = 3) +
+  geom_text(y = .7, x = avg_df$amount + avg_df$amount*.1,
+           label = paste("Average Annual Giving:", dollar(avg_df$amount), sep = "\n"),
+           size = 2) +
+  facet_wrap(~ category) +
+  theme_minimal() +
+  scale_x_continuous(labels = dollar, breaks = c(0, 2500000, 5000000, 7500000)) +
+  expand_limits(x = 0) +
+  labs(title = "Expected Range of Giving",
+         subtitle = "85% probability that giving will fall within this range",
+         x = "",
+         y = "") +
+  coord_flip()
+```
+
+**These ranges represent the giving that Shocjin Nonprofit sites can expect to receive on an annual basis once both giving programs are more than a few years old.**
+
+# The Analysis
+
+We have made the assumption that the sum of the averages (represented by the dotted lines above) for both categories would be a break-even point, where Shocjin Nonprofit sites are receiving as much money as they need to operate, and everything below that would be considered a loss.  
+
+```{r breakeven}
+avg <- (cos_avg + GS_avg)
+
+est_loss_stable <- function(t, w) {
+  total <- t
+  weight <- w * total
+  break_even <- t / 2 * avg 
+
+  all_years_stable <- bind_rows(GS_years, cos_years) %>%
+    select(-cum_total) %>%
+    filter(as.numeric(year) > 5) %>%
+    pivot_wider(names_from = category, values_from = year_total) %>%
+    mutate(loss = ifelse(
+      break_even > (GS * (weight) + cos * (total - weight)), 1, 0
+  ))
+  est_df_stable <- tibble(total = t, weight = w,
+                 loss_prob = mean(all_years_stable$loss))
+  est_df_stable
+}
+
+est_loss_startup <- function(t, w) {
+  total <- t
+  weight <- w * total
+    break_even <- t / 2 * avg 
+    
+    all_years_startup <- bind_rows(GS_years, cos_years) %>%
+    select(-cum_total) %>%
+    filter(as.numeric(year) < 6) %>%
+    pivot_wider(names_from = category, values_from = year_total) %>%
+    mutate(loss = ifelse(
+      break_even > (GS * (weight) + cos * (total - weight)), 1, 0
+  ))
+
+est_df_startup <<- tibble(total = t, weight = w,
+                 loss_prob = mean(all_years_startup$loss))
+est_df_startup
+}
+
+
+est_table <- expand_grid(t = 1:5, w = seq(from = 0, to = 1, by = .05))
+
+est_df_stable <- map2_df(est_table$t, est_table$w, est_loss_stable)
+est_df_startup <- map2_df(est_table$t, est_table$w, est_loss_startup)
+
+startup_v <- est_df_startup %>%
+  ggplot(aes(weight, loss_prob, group = total)) +
+  geom_line() +
+  theme_minimal() +
+  labs(x = "Ratio of GS:Corporate Development Focus",
+       y = "Probability of Loss",
+       title = "Start-up Years") +
+  scale_y_continuous(labels = percent, limits = c(0, 1)) +
+    scale_x_continuous(breaks = c(0, .5, 1), labels = c("Corporate Focus", "Even Focus","GS Focus"))
+
+stable_v <- est_df_stable %>%
+  ggplot(aes(weight, loss_prob, group = total)) +
+  geom_line() +
+  theme_minimal() +
+  labs(x = "",
+       y = "Probability of Loss",
+       title = "Stable Years") +
+  scale_y_continuous(labels = percent, limits = c(0, 1)) +
+  scale_x_continuous(breaks = c(0, .5, 1), labels = c("Total Corporate Focus", "Even Focus","Total GS Focus"))
+
+```
+
+The figures below represent the risk of experiencing a loss for both startup years and for stable years.  
+
+
+```{r fig.cap=c("","Loss here defined as any annual giving total less than the expected average given an equal distribution of focus between Giving Society and Corporate giving."), fig.align="center", out.width="90%", fig.cap=c("Risk of Loss During Startup Years", "Risk of Loss During Stable Years")}
+startup_v
+stable_v
+```
+
+In both cases, the risk is minimized as more focus if given to *Giving Society* giving.  This is because corporate giving is much more volatile, with a larger range of gift sizes and a smaller number of gifts received each year.
+
+# The Recommendation
+
+The optimal distribution of development staff is to **maximize focus on *Giving Society* giving, especially in startup years** (i.e. first years of implementation for *both* types of giving).  
+
+The level to which it is maximized should be determined by the non-monetary value of the corporate engagements.
+
+## Caveats
+
+The simulations upon which this recommendation is based assume that there are no diminishing returns, either over time (i.e. supply doesn't dwindle as the site cycles through new individuals and corporations every year) or in a single year (i.e. a second development manager would experience the same number of engagements and rate of success).
+
+If these assumptions do not remain true, the accuracy of this model will falter.  The distribution of gift sizes and number of gifts should therefore be monitored on an ongoing basis so the model and recommendation can be adjusted if necessary.
+
+Also, as mentioned above, we assume there are non-monetary returns for both types of engagement.  Quantifying these returns and gathering data on these values should be done in the future to enhance the model and recommendations.

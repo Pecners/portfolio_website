@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Authors | Spencer Schien</title>
+    <link>https://spencerschien.info/authors/</link>
+      <atom:link href="https://spencerschien.info/authors/index.xml" rel="self" type="application/rss+xml" />
+    <description>Authors</description>
+    <generator>Wowchemy (https://wowchemy.com)</generator><language>en-us</language><lastBuildDate>Sat, 14 Mar 2020 00:00:00 +0000</lastBuildDate>
+    <image>
+      <url>https://spencerschien.info/media/icon_hu367e19900c6e4898bd873f1421839d81_18043_512x512_fill_lanczos_center_3.png</url>
+      <title>Authors</title>
+      <link>https://spencerschien.info/authors/</link>
+    </image>
+    
+  </channel>
+</rss>

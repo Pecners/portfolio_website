@@ -1,0 +1,603 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Posts | Spencer Schien</title>
+    <link>https://spencerschien.info/post/</link>
+      <atom:link href="https://spencerschien.info/post/index.xml" rel="self" type="application/rss+xml" />
+    <description>Posts</description>
+    <generator>Wowchemy (https://wowchemy.com)</generator><language>en-us</language><lastBuildDate>Sat, 14 Mar 2020 00:00:00 +0000</lastBuildDate>
+    <image>
+      <url>https://spencerschien.info/media/icon_hu367e19900c6e4898bd873f1421839d81_18043_512x512_fill_lanczos_center_3.png</url>
+      <title>Posts</title>
+      <link>https://spencerschien.info/post/</link>
+    </image>
+    
+    <item>
+      <title>Data Scientist Interview Case Study</title>
+      <link>https://spencerschien.info/post/interview_case_study/data-science-interview-case-study/</link>
+      <pubDate>Sat, 14 Mar 2020 00:00:00 +0000</pubDate>
+      <guid>https://spencerschien.info/post/interview_case_study/data-science-interview-case-study/</guid>
+      <description>&lt;p&gt;This is a recreation of a case-study I was asked to complete to showcase my technical abilities as part of an interview process for a Data Scientist position. I have changed any information that might identify the hiring organization.&lt;/p&gt;
+&lt;p&gt;In addition to this post that includes the case study prompt, this project included two other posts:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;&lt;a href=&#34;https://spencerschien.info/post/interview_case_study/analysis/analysis/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Full Case Study Documentation&lt;/a&gt; &amp;ndash; This is the detailed documentation of methodology and analysis.&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://spencerschien.info/post/interview_case_study/recommendation/recommendation/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Recommendation to Leadership&lt;/a&gt; &amp;ndash; This is the final recommendation, as would be presented to executive leadership.&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h2 id=&#34;the-prompt&#34;&gt;The Prompt&lt;/h2&gt;
+&lt;p&gt;Please present a recommendation based on your work on the following case study. We will be looking
+for your:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Analytical skills when not all data is available and certain&lt;/li&gt;
+&lt;li&gt;Ability to distill the analysis to an accessible recommendation&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;All numbers in the case study are fabricated.&lt;/p&gt;
+&lt;p&gt;Shocjin Nonprofit receives significant private funding through various channels including private individuals,
+foundations, and corporations. Historically, Shocjin Nonprofit has prioritized corporate partnerships and
+foundations whom often provide multi-year grants in significant amounts over individuals, who often
+give in one-off donations of small quantities. In the most recent year, however, with the introduction of
+the &amp;ldquo;Giving Society&amp;rdquo; some sites in the Shocjin Nonprofit network have doubled down on a strategy which
+more heavily emphasizes private individuals. The tradeoff is that this investment requires having at
+least one development staff member exclusively work on the Giving Society.&lt;/p&gt;
+&lt;p&gt;After collecting some data, Headquarters would like to make a recommendation to all the sites (city
+offices) on the optimal strategy. Your job is to make that recommendation. Using survey data
+representative of the whole network, the following ranges have been determined. All ranges represent a
+90% confidence interval for data which should be assumed to be normally distributed unless otherwise
+indicated.&lt;/p&gt;
+&lt;p&gt;Each development manager who focuses on corporate development expects to be able to engage
+between 15 and 25 new corporations a year, and of those engagements they expect 25% of those to
+succeed. Corporate grants were found to be lognormally distributed and were between $50,000 and
+$1,000,000 per year. Grants typically extend past the first year of the grant (and when they do they
+return the same value each year.) The number of years that it will extend is distributed with a Poisson
+distribution with an expected value of 2 years.&lt;/p&gt;
+&lt;p&gt;On the other hand, development managers who focus on the Giving Society expect to engage
+between 200 and 500 individuals who could contribute the minimum of $5,000 to enter the Giving
+Society, with typical success rate of 50%. Giving Society members donate between $5,000 and $50,000, also
+distributed lognormally, the first year, but on average only 50% of individuals donate the same amount
+the following year and on average only 10% (of the first year number) donate the same amount in the
+third year.&lt;/p&gt;
+&lt;p&gt;Using this information, what distribution of corporate to Giving Society development managers should sites use? Is
+there any additional information that you would need to make this recommendation? Present your
+recommendation in a format appropriate for a non-technical executive. Please send any scratch work
+and analysis performed as well.&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>Full Case Study Documentation</title>
+      <link>https://spencerschien.info/post/interview_case_study/analysis/</link>
+      <pubDate>Sat, 14 Mar 2020 00:00:00 +0000</pubDate>
+      <guid>https://spencerschien.info/post/interview_case_study/analysis/</guid>
+      <description>&lt;h1 id=&#34;introduction&#34;&gt;Introduction&lt;/h1&gt;
+&lt;h2 id=&#34;purpose&#34;&gt;Purpose&lt;/h2&gt;
+&lt;p&gt;The purpose of this project is to provide a recommendation for the optimal allocation of development staff at Shocjin Nonprofit sites to either corporation/foundation giving or to &lt;em&gt;Giving Society&lt;/em&gt; (GS) giving.  Based on the given survey data, it is implied that the numbers represent a stable state (i.e. the number of engagements and rate of success will not diminish with time as the site cycles through the local corporations or other giving populations).&lt;/p&gt;
+&lt;p&gt;To arrive at a recommendation, the following process will be followed:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;Simulate annual giving for both corporations and GS.  This will create two dataframes in which each observation represents a gift.  Each will also simulate the number of years the gift will be extended.  Therefore, each dataframe will represent total commitments from a single year, including those that will be paid in the given year and those that will be anticipated in coming years.&lt;/li&gt;
+&lt;li&gt;Wrap this simulation in a function so it can be used with &lt;code&gt;replicate()&lt;/code&gt; to run a Monte Carlo simulation for a given year.&lt;/li&gt;
+&lt;li&gt;Loop the simulation over multiple years to simulate giving trends extending beyond the typical life-cycle of a single year&amp;rsquo;s gifts.  This method will allow the simulation to reach a stable state, where the additive influence of gifts accumulating and expiring has leveled off.&lt;/li&gt;
+&lt;li&gt;Determine the range of giving that can be expected with 90% confidence during the stable state of giving for both groups.&lt;/li&gt;
+&lt;li&gt;Make the recommendation that allows for an acceptable level of risk while still maintaining an adequate level of giving for each site.&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h2 id=&#34;further-questions-and-additional-data&#34;&gt;Further Questions and Additional Data&lt;/h2&gt;
+&lt;p&gt;This analysis and recommendation is based on distributions and probabilities of survey data, representing a 90% confidence interval.  The accuracy of any simulations are therefore limited and would be enhanced with access to the raw data.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Questions:&lt;/strong&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;What impacts the distribution of the number of engagements per year?  If it is a function of the size of the city&amp;rsquo;s population or economy, then more specific recommendations could be made to sites.&lt;/li&gt;
+&lt;li&gt;Do we observe stable replacement of gifts over the years?  This simulation assumes that the answer is yes &amp;ndash; meaning there is not a point where the giving supply is &amp;ldquo;tapped out&amp;rdquo;, so to speak.&lt;/li&gt;
+&lt;li&gt;What other forms of return does a Shocjin Nonprofit site receive from engagements with corporations or individuals through the &lt;em&gt;Giving Society&lt;/em&gt;?  This analysis is based solely on the financial return in terms of giving, but returns in the form of enhanced recruitment, partnerships that might reduce or distribute costs, etc. could be considered as well.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h1 id=&#34;modeling&#34;&gt;Modeling&lt;/h1&gt;
+&lt;h2 id=&#34;1-simulating-the-data&#34;&gt;1. Simulating the Data&lt;/h2&gt;
+&lt;p&gt;First, we need to recreate a single year of giving for both corporate and GS giving.  The code below simulates the appropriate number of engagements, the success rate of engagements, the distribution of gift sizes, and the distribution of gift extensions.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-r&#34;&gt;library(EnvStats) # for truncated distributions
+library(tidyverse) # for data manipulation and visualization
+library(scales) # for setting percentages and scales, specifically in visuals
+library(ggbeeswarm) # for creating the violin-like dot plot
+library(ggalt) # for dumbbell plot
+
+# set seed to ensure reproducibility
+set.seed(123) 
+
+# Randomly assign the number of new corporations engaged in the year
+# based on a truncated normal distribution; sd is estimated to ensure full 
+# range shows up in the samples. Samples are rounded to the nearest 
+# integer so we don&#39;t have partial engagements.
+new_cos &amp;lt;- round(rnormTrunc(1, mean = 20, sd = 10/6, min = 15, max = 25), 0)
+
+# Assign the number of successes (i.e. gifts)
+success_cos &amp;lt;- round(new_cos * .25, 0)
+
+# Set up mean and sd for the lognormal distribution
+# of gift sizes.  Both are estimates since real values
+# weren&#39;t provided.
+avg_cos &amp;lt;- mean(c(log(50000), log(1000000)))
+stdev_cos &amp;lt;- log(((1000000) - (50000))/success_cos)
+
+# Simulate single year gifts by sampling a truncated lognormal
+# distribution based on the values calculated above.
+dis_cos &amp;lt;- rlnormTrunc(success_cos, avg_cos, stdev_cos, min = 50000, max = 1000000)
+
+# Make a dataframe out of this vector, adding the simulation index `N`,
+# the years each gift will be repeated `years_extended`, and the total
+# commitments represented by this year of giving `total_commitment`
+dis_cos &amp;lt;- tibble(amount = dis_cos, N = 1, years_extended = rpois(success_cos, 2) + 1,
+              total_commitment = amount * years_extended)
+dis_cos
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;## # A tibble: 5 x 4
+##    amount     N years_extended total_commitment
+##     &amp;lt;dbl&amp;gt; &amp;lt;dbl&amp;gt;          &amp;lt;dbl&amp;gt;            &amp;lt;dbl&amp;gt;
+## 1 529597.     1              3         1588790.
+## 2 170353.     1              5          851766.
+## 3 703527.     1              3         2110580.
+## 4 836028.     1              3         2508083.
+## 5  57346.     1              6          344074.
+&lt;/code&gt;&lt;/pre&gt;
+&lt;h2 id=&#34;2-wrapping-in-a-function&#34;&gt;2. Wrapping in a Function&lt;/h2&gt;
+&lt;p&gt;Next, we need to wrap this simulation in a function that will allow us to append sequential simulations to the same dataframe.  This is achieved with the following code, which makes the same parameter assignments as above:&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-r&#34;&gt;sim_cos &amp;lt;- function() {
+  new_cos &amp;lt;- round(rnormTrunc(1, mean = 20, sd = 10/6, min = 15, max = 25), 0)
+  success_cos &amp;lt;- round(new_cos * .25, 0)
+  
+  
+  avg_cos &amp;lt;- mean(c(log(50000), log(1000000)))
+  stdev_cos &amp;lt;- log(((1000000) - (50000))/success_cos)
+  
+  # Make a base assignment with `dis_cos`, then a secondary assignment
+  # with `dis_cos1` that will be rewritten and appended to the base with
+  # each iteration.
+  if(is.null(dis_cos)) {
+    dis_cos &amp;lt;- rlnormTrunc(success_cos, avg_cos, stdev_cos, min = 50000, max = 1000000)
+    dis_cos &amp;lt;- tibble(amount = dis_cos, N = 1, 
+                      # `years_extended` set to follow Poisson distribution
+                      years_extended = rpois(success_cos, 2) + 1,
+                      total_commitment = amount * years_extended)
+  } else {
+    dis_cos1 &amp;lt;- rlnormTrunc(success_cos, avg_cos, stdev_cos, min = 50000, max = 1000000)
+    dis_cos1 &amp;lt;- tibble(amount = dis_cos1, N = max(dis_cos$N) + 1, 
+                       years_extended = rpois(success_cos, 2) + 1,
+                   total_commitment = amount * years_extended) 
+  }
+  dis_cos &amp;lt;&amp;lt;- bind_rows(dis_cos, dis_cos1)
+}
+
+# Test the function.  Output confirms that simulation is
+# successful and appended to the base.
+test_sim &amp;lt;- sim_cos()
+test_sim
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;## # A tibble: 10 x 4
+##     amount     N years_extended total_commitment
+##      &amp;lt;dbl&amp;gt; &amp;lt;dbl&amp;gt;          &amp;lt;dbl&amp;gt;            &amp;lt;dbl&amp;gt;
+##  1 529597.     1              3         1588790.
+##  2 170353.     1              5          851766.
+##  3 703527.     1              3         2110580.
+##  4 836028.     1              3         2508083.
+##  5  57346.     1              6          344074.
+##  6 380189.     2              1          380189.
+##  7 277811.     2              2          555622.
+##  8  68134.     2              6          408802.
+##  9 739936.     2              5         3699679.
+## 10 104654.     2              4          418618.
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The above dataframe represents two simulations of a single year of giving for corporations.  So, we have our function working.  Now we can run it for real to simulate a single year of giving one thousand times (or more, if we wanted).&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-r&#34;&gt;# Clear the old `dis_cos` value from the envirnment 
+# so we can start anew.
+rm(dis_cos)
+
+# initialize the assignments needed by the function
+dis_cos &amp;lt;- dis_cos1 &amp;lt;- NULL
+
+# Use `replicate()` for the Monte Carlo simulation
+replicate(1000, sim_cos())
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Now to make a quick inspection of the data we just simulated, we can review the distribution of both the gift sizes and the number of years the gifts are extended.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-r&#34;&gt;dis_cos %&amp;gt;%
+  ggplot(aes(amount)) +
+  geom_histogram() +
+  theme_minimal() +
+  scale_x_continuous(labels = dollar) +
+  labs(title = &amp;quot;Distribution of Simulated Gift Amounts&amp;quot;)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;img src=&#34;https://spencerschien.info/post/interview_case_study/analysis/index_files/figure-html/review-1.png&#34; width=&#34;672&#34; /&gt;
+&lt;pre&gt;&lt;code class=&#34;language-r&#34;&gt;dis_cos %&amp;gt;%
+  ggplot(aes(years_extended)) +
+  geom_histogram() +
+  theme_minimal() +
+  scale_x_continuous(breaks = c(seq(1, max(dis_cos$years_extended), by = 1))) +
+  labs(title = &amp;quot;Distribution of Simulated Number of Years Extended&amp;quot;)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;img src=&#34;https://spencerschien.info/post/interview_case_study/analysis/index_files/figure-html/review-2.png&#34; width=&#34;672&#34; /&gt;
+&lt;p&gt;Ranges and distributions look as-expected, so we can move on to the next step which is to loop this simulation over multiple years.&lt;/p&gt;
+&lt;h2 id=&#34;3-loop-over-multiple-years&#34;&gt;3. Loop over Multiple Years&lt;/h2&gt;
+&lt;p&gt;For this loop, we will edit the function slightly to add columns tracking the giving over each year.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-r&#34;&gt;# rewritten function with additional columns
+sim_cos &amp;lt;- function() {
+  new_cos &amp;lt;- round(rnormTrunc(1, mean = 20, sd = 10/6, min = 15, max = 25), 0)
+  success_cos &amp;lt;- round(new_cos * .25, 0)
+  
+  avg_cos &amp;lt;- mean(c(log(50000), log(1000000)))
+  stdev_cos &amp;lt;- log(((1000000) - (50000))/success_cos)
+  
+  if(is.null(dis_cos)) {
+    dis_cos &amp;lt;- rlnormTrunc(success_cos, avg_cos, stdev_cos, min = 50000, max = 1000000)
+    dis_cos &amp;lt;- tibble(amount = dis_cos, N = 1, 
+                      years_extended = rpois(success_cos, 2) + 1,
+                  total_commitment = amount * years_extended)
+  } else {
+    dis_cos1 &amp;lt;- rlnormTrunc(success_cos, avg_cos, stdev_cos, min = 50000, max = 1000000)
+    dis_cos1 &amp;lt;- tibble(amount = dis_cos1, N = max(dis_cos$N) + 1, 
+                       years_extended = rpois(success_cos, 2) + 1,
+                   total_commitment = amount * years_extended) 
+  }
+  dis_cos &amp;lt;&amp;lt;- bind_rows(dis_cos, dis_cos1) %&amp;gt;%
+    # add the columns to track giving over the years
+    mutate(start_year = i,
+           year_1 = ifelse(start_year &amp;lt;= 0 &amp;amp; start_year + years_extended &amp;gt;= 1, amount, 0),
+           year_2 = ifelse(start_year &amp;lt;= 1 &amp;amp; start_year + years_extended &amp;gt;= 2, amount, 0),
+           year_3 = ifelse(start_year &amp;lt;= 2 &amp;amp; start_year + years_extended &amp;gt;= 3, amount, 0),
+           year_4 = ifelse(start_year &amp;lt;= 3 &amp;amp; start_year + years_extended &amp;gt;= 4, amount, 0),
+           year_5 = ifelse(start_year &amp;lt;= 4 &amp;amp; start_year + years_extended &amp;gt;= 5, amount, 0),
+           year_6 = ifelse(start_year &amp;lt;= 5 &amp;amp; start_year + years_extended &amp;gt;= 6, amount, 0),
+           year_7 = ifelse(start_year &amp;lt;= 6 &amp;amp; start_year + years_extended &amp;gt;= 7, amount, 0),
+           year_8 = ifelse(start_year &amp;lt;= 7 &amp;amp; start_year + years_extended &amp;gt;= 8, amount, 0),
+           year_9 = ifelse(start_year &amp;lt;= 8 &amp;amp; start_year + years_extended &amp;gt;= 9, amount, 0),
+           year_10 = ifelse(start_year &amp;lt;= 9 &amp;amp; start_year + years_extended &amp;gt;= 10, amount, 0))
+}
+
+# Initialize new value that will be the full dataframe
+cos &amp;lt;- NULL
+
+# loop over 10 years starting with 0
+# to facilitate addition of `years_extended`
+for(i in 0:9) {
+  
+  # re-initialize inside the loop
+  dis_cos &amp;lt;- dis_cos1 &amp;lt;- NULL
+  
+  # Monte Carlo
+  replicate(1000, sim_cos())
+  
+  # Append each round of simulations
+  cos &amp;lt;- bind_rows(cos, dis_cos)
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The result of the above code is a dataframe that represents one thousand simulations of a single year of corporate giving repeated sequentially for 10 years (i.e. 10,000 year-giving simulations).  The dataframe has the following attributes:&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-r&#34;&gt;glimpse(cos)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;## Rows: 49,935
+## Columns: 15
+## $ amount           &amp;lt;dbl&amp;gt; 205220.94, 439211.78, 225424.40, 680839.15, 362518...
+## $ N                &amp;lt;dbl&amp;gt; 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 4,...
+## $ years_extended   &amp;lt;dbl&amp;gt; 6, 4, 2, 2, 2, 3, 3, 2, 4, 1, 3, 3, 2, 1, 3, 4, 3,...
+## $ total_commitment &amp;lt;dbl&amp;gt; 1231325.65, 1756847.13, 450848.81, 1361678.30, 725...
+## $ start_year       &amp;lt;int&amp;gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,...
+## $ year_1           &amp;lt;dbl&amp;gt; 205220.94, 439211.78, 225424.40, 680839.15, 362518...
+## $ year_2           &amp;lt;dbl&amp;gt; 205220.94, 439211.78, 225424.40, 680839.15, 362518...
+## $ year_3           &amp;lt;dbl&amp;gt; 205220.94, 439211.78, 0.00, 0.00, 0.00, 242954.82,...
+## $ year_4           &amp;lt;dbl&amp;gt; 205220.94, 439211.78, 0.00, 0.00, 0.00, 0.00, 0.00...
+## $ year_5           &amp;lt;dbl&amp;gt; 205220.9, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, ...
+## $ year_6           &amp;lt;dbl&amp;gt; 205220.9, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, ...
+## $ year_7           &amp;lt;dbl&amp;gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,...
+## $ year_8           &amp;lt;dbl&amp;gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,...
+## $ year_9           &amp;lt;dbl&amp;gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,...
+## $ year_10          &amp;lt;dbl&amp;gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,...
+&lt;/code&gt;&lt;/pre&gt;
+&lt;h2 id=&#34;4-determine-expected-range&#34;&gt;4. Determine Expected Range&lt;/h2&gt;
+&lt;p&gt;Now to the good stuff &amp;ndash; visualizing and analyzing our full range of simulated data to come up with expected giving ranges.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-r&#34;&gt;# Before viz, we need to tidy the data a bit.
+# Below code transforms from wide to long format,
+# Which is easier to plot.  Also calculates annual
+# giving totals for each simulation.
+cos_years &amp;lt;- cos %&amp;gt;%
+  group_by(N) %&amp;gt;%
+  summarise_at(vars(year_1:year_10), sum) %&amp;gt;%
+  pivot_longer(cols = c(2:11), names_to = &amp;quot;year&amp;quot;, values_to = &amp;quot;year_amount&amp;quot;) %&amp;gt;%
+  modify_at(&amp;quot;year&amp;quot;, fct_relevel, levels = c(&amp;quot;year_1&amp;quot;,
+                                            &amp;quot;year_2&amp;quot;,
+                                            &amp;quot;year_3&amp;quot;,
+                                            &amp;quot;year_4&amp;quot;,
+                                            &amp;quot;year_5&amp;quot;,
+                                            &amp;quot;year_6&amp;quot;,
+                                            &amp;quot;year_7&amp;quot;,
+                                            &amp;quot;year_8&amp;quot;,
+                                            &amp;quot;year_9&amp;quot;,
+                                            &amp;quot;year_10&amp;quot;)) %&amp;gt;%
+  group_by(N, year) %&amp;gt;%
+  summarise(year_total = sum(year_amount)) %&amp;gt;%
+  mutate(cum_total = cumsum(year_total),
+         category = &amp;quot;cos&amp;quot;)
+
+
+# Plot the annual giving for each simulation.
+cos_years %&amp;gt;%
+  ggplot(aes(year, year_total)) +
+  geom_line(aes(group = N), alpha = 0.5) +
+  theme_minimal() +
+  scale_y_continuous(labels = dollar)+
+  expand_limits(y = 0) +
+  labs(title = &amp;quot;1,000 10-Year Corporate Giving Simulations&amp;quot;,
+       y = &amp;quot;Total Gifts Received&amp;quot;,
+       x = &amp;quot;Year of Simulation&amp;quot;)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;img src=&#34;https://spencerschien.info/post/interview_case_study/analysis/index_files/figure-html/visualize-1.png&#34; width=&#34;672&#34; /&gt;
+&lt;p&gt;As is evident from this visual, giving does in fact reach a more stable state by &lt;code&gt;year_10&lt;/code&gt;, and it is from this stable state that we will take our estimate of expected corporate giving.  To do so, we will calculate the 90% confidence interval for years six through ten.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-r&#34;&gt;# Filter data for years 6 - 10
+cos_latter &amp;lt;- cos %&amp;gt;%
+  group_by(N) %&amp;gt;%
+  summarise_at(vars(year_1:year_10), sum) %&amp;gt;%
+  pivot_longer(cols = c(2:11), names_to = &amp;quot;year&amp;quot;, values_to = &amp;quot;year_amount&amp;quot;) %&amp;gt;%
+  modify_at(&amp;quot;year&amp;quot;, fct_relevel, levels = c(&amp;quot;year_1&amp;quot;,
+                                            &amp;quot;year_2&amp;quot;,
+                                            &amp;quot;year_3&amp;quot;,
+                                            &amp;quot;year_4&amp;quot;,
+                                            &amp;quot;year_5&amp;quot;,
+                                            &amp;quot;year_6&amp;quot;,
+                                            &amp;quot;year_7&amp;quot;,
+                                            &amp;quot;year_8&amp;quot;,
+                                            &amp;quot;year_9&amp;quot;,
+                                            &amp;quot;year_10&amp;quot;)) %&amp;gt;%
+  mutate(year = as.numeric(year)) %&amp;gt;%
+  filter(year &amp;gt; 5)
+
+# Will calculate the CI at the end to avoid loading
+# Rmisc package which causes conflicts
+&lt;/code&gt;&lt;/pre&gt;
+&lt;h2 id=&#34;adding-giving-society-simulation&#34;&gt;Adding Giving Society Simulation&lt;/h2&gt;
+&lt;p&gt;Now it&amp;rsquo;s time to run the same analysis over the GS giving.  The below code does the same as we did above for corporate giving:&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-r&#34;&gt;sim_GS &amp;lt;- function() {
+  new_GS &amp;lt;- round(rnormTrunc(1, mean = 350, sd = 300/6, min = 200, max = 500), 0)
+  success &amp;lt;- round(new_GS * .5, 0)
+  
+  min &amp;lt;- 5000
+  max &amp;lt;- 50000
+  avg &amp;lt;- mean(c(log(5000), log(50000)))
+  stdev &amp;lt;- log(((50000) - (5000))/success)
+  
+  if(is.null(dis)) {
+    dis &amp;lt;- rlnormTrunc(success, avg, stdev, min = min, max = max)
+    dis &amp;lt;- tibble(amount = dis, N = 1, years_extended = sample(c(1, 2, 3), 
+                                                               size = success, 
+                                                               prob = c(.5, .4, .1), 
+                                                               replace = TRUE),
+                  total_commitment = amount * years_extended)
+  } else {
+    dis1 &amp;lt;- rlnormTrunc(success, avg, stdev, min = min, max = max)
+    dis1 &amp;lt;- tibble(amount = dis1, N = max(dis$N) + 1, 
+                   years_extended = sample(c(1, 2, 3), 
+                                           size = success, 
+                                           prob = c(.5, .4, .1), 
+                                           replace = TRUE),
+                   total_commitment = amount * years_extended) 
+  }
+  dis &amp;lt;&amp;lt;- bind_rows(dis, dis1) %&amp;gt;%
+    mutate(start_year = i,
+           year_1 = ifelse(start_year &amp;lt;= 0 &amp;amp; start_year + years_extended &amp;gt;= 1, amount, 0),
+           year_2 = ifelse(start_year &amp;lt;= 1 &amp;amp; start_year + years_extended &amp;gt;= 2, amount, 0),
+           year_3 = ifelse(start_year &amp;lt;= 2 &amp;amp; start_year + years_extended &amp;gt;= 3, amount, 0),
+           year_4 = ifelse(start_year &amp;lt;= 3 &amp;amp; start_year + years_extended &amp;gt;= 4, amount, 0),
+           year_5 = ifelse(start_year &amp;lt;= 4 &amp;amp; start_year + years_extended &amp;gt;= 5, amount, 0),
+           year_6 = ifelse(start_year &amp;lt;= 5 &amp;amp; start_year + years_extended &amp;gt;= 6, amount, 0),
+           year_7 = ifelse(start_year &amp;lt;= 6 &amp;amp; start_year + years_extended &amp;gt;= 7, amount, 0),
+           year_8 = ifelse(start_year &amp;lt;= 7 &amp;amp; start_year + years_extended &amp;gt;= 8, amount, 0),
+           year_9 = ifelse(start_year &amp;lt;= 8 &amp;amp; start_year + years_extended &amp;gt;= 9, amount, 0),
+           year_10 = ifelse(start_year &amp;lt;= 9 &amp;amp; start_year + years_extended &amp;gt;= 10, amount, 0))
+}
+
+GS &amp;lt;- NULL
+
+for(i in 0:9) {
+  dis &amp;lt;- dis1 &amp;lt;- NULL
+  replicate(1000, sim_GS())
+  GS &amp;lt;- bind_rows(GS, dis)
+  
+}
+
+GS_years &amp;lt;- GS %&amp;gt;%
+  group_by(N) %&amp;gt;%
+  summarise_at(vars(year_1:year_10), sum) %&amp;gt;%
+  pivot_longer(cols = c(2:11), names_to = &amp;quot;year&amp;quot;, values_to = &amp;quot;year_amount&amp;quot;) %&amp;gt;%
+  group_by(N, year) %&amp;gt;%
+  summarise(year_total = sum(year_amount)) %&amp;gt;%
+  mutate(cum_total = cumsum(year_total),
+         category = &amp;quot;GS&amp;quot;) %&amp;gt;%
+  modify_at(&amp;quot;year&amp;quot;, fct_relevel, levels = c(&amp;quot;year_1&amp;quot;,
+                                            &amp;quot;year_2&amp;quot;,
+                                            &amp;quot;year_3&amp;quot;,
+                                            &amp;quot;year_4&amp;quot;,
+                                            &amp;quot;year_5&amp;quot;,
+                                            &amp;quot;year_6&amp;quot;,
+                                            &amp;quot;year_7&amp;quot;,
+                                            &amp;quot;year_8&amp;quot;,
+                                            &amp;quot;year_9&amp;quot;,
+                                            &amp;quot;year_10&amp;quot;))
+GS_latter &amp;lt;- GS %&amp;gt;%
+  group_by(N) %&amp;gt;%
+  summarise_at(vars(year_1:year_10), sum) %&amp;gt;%
+  pivot_longer(cols = c(2:11), names_to = &amp;quot;year&amp;quot;, values_to = &amp;quot;year_amount&amp;quot;) %&amp;gt;%
+  modify_at(&amp;quot;year&amp;quot;, fct_relevel, levels = c(&amp;quot;year_1&amp;quot;,
+                                            &amp;quot;year_2&amp;quot;,
+                                            &amp;quot;year_3&amp;quot;,
+                                            &amp;quot;year_4&amp;quot;,
+                                            &amp;quot;year_5&amp;quot;,
+                                            &amp;quot;year_6&amp;quot;,
+                                            &amp;quot;year_7&amp;quot;,
+                                            &amp;quot;year_8&amp;quot;,
+                                            &amp;quot;year_9&amp;quot;,
+                                            &amp;quot;year_10&amp;quot;)) %&amp;gt;%
+  mutate(year = as.numeric(year)) %&amp;gt;%
+  filter(year &amp;gt; 5)
+
+GS_years %&amp;gt;%
+  ggplot(aes(year, year_total)) +
+  geom_line(aes(group = N), alpha = .5) +
+  theme_minimal() +
+  scale_y_continuous(labels = dollar) +
+  expand_limits(y = 0) +
+  labs(title = &amp;quot;1,000 10-Year GS Giving Simulations&amp;quot;,
+       x = &amp;quot;Total Gifts Received&amp;quot;,
+       y = &amp;quot;Year of Simulation&amp;quot;)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;img src=&#34;https://spencerschien.info/post/interview_case_study/analysis/index_files/figure-html/GS-1.png&#34; width=&#34;672&#34; /&gt;
+&lt;h1 id=&#34;analysis&#34;&gt;Analysis&lt;/h1&gt;
+&lt;p&gt;The visual below represents the average giving over this stable period.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-r&#34;&gt;cos_avg &amp;lt;- mean(cos_latter$year_amount)
+GS_avg &amp;lt;- mean(GS_latter$year_amount)
+
+avg_df &amp;lt;- tibble(category = c(&amp;quot;Corporate&amp;quot;, &amp;quot;Giving Society&amp;quot;),
+                 amount = c(cos_avg, GS_avg))
+
+avg_df %&amp;gt;%
+  ggplot(aes(category, amount)) +
+  geom_col(width = .5) +
+  theme_minimal() +
+  scale_y_continuous(labels = dollar) +
+  labs(title = &amp;quot;Average Annual Stable-State Giving&amp;quot;,
+       x = &amp;quot;Giving Category&amp;quot;,
+       y = &amp;quot;Average Annual Gift&amp;quot;)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;img src=&#34;https://spencerschien.info/post/interview_case_study/analysis/index_files/figure-html/cis-1.png&#34; width=&#34;672&#34; /&gt;
+&lt;p&gt;This represents the 90% probability that the true mean will be represented within the span, which is a useful metric.  However, we want to also mitigate risk (i.e. the possibility that total gifts will come in lower than expected).&lt;/p&gt;
+&lt;p&gt;As the 10-year line graphs demonstrated above, neither giving category will be expected to lose money once a stable state is reached (in initial simulations not represented here, corporate giving did show a potential for zero gifts in &lt;code&gt;year_1&lt;/code&gt;).  Therefore, the risk should be assessed in terms of the lowest potential return.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-r&#34;&gt;# define 95% range of data
+quant_cos &amp;lt;- quantile(cos_latter$year_amount, c(.025, .975))
+quant_GS &amp;lt;- quantile(GS_latter$year_amount, c(.025, .975))
+
+# combine in a dataframe for visualization
+quants_df &amp;lt;- tibble(Corporate = quant_cos, &amp;quot;Giving Society&amp;quot; = quant_GS) %&amp;gt;%
+  pivot_longer(1:2, names_to = &amp;quot;category&amp;quot;, values_to = &amp;quot;amount&amp;quot;) %&amp;gt;%
+  group_by(category) %&amp;gt;%
+  summarise(xend = min(amount),
+            x = max(amount))
+
+
+
+quants_df %&amp;gt;%
+  ggplot(aes(y = &amp;quot;&amp;quot;)) +
+  geom_dumbbell(aes(xend = xend, x = x), size_x = 3, size_xend = 3) +
+  geom_vline(data = avg_df, aes(xintercept = amount), linetype = 3) +
+  geom_text(y = .7, x = avg_df$amount + avg_df$amount*.1,
+           label = paste(&amp;quot;Average Annual Giving:&amp;quot;, dollar(avg_df$amount), sep = &amp;quot;\n&amp;quot;),
+           size = 2) +
+  facet_wrap(~ category) +
+  theme_minimal() +
+  scale_x_continuous(labels = dollar, breaks = c(0, 2500000, 5000000, 7500000)) +
+  expand_limits(x = 0) +
+  labs(title = &amp;quot;Expected Range of Giving&amp;quot;,
+         subtitle = &amp;quot;85% probability that giving will fall within this range&amp;quot;,
+         x = &amp;quot;&amp;quot;,
+         y = &amp;quot;&amp;quot;) +
+  coord_flip()
+&lt;/code&gt;&lt;/pre&gt;
+&lt;img src=&#34;https://spencerschien.info/post/interview_case_study/analysis/index_files/figure-html/range-1.png&#34; width=&#34;672&#34; /&gt;
+&lt;p&gt;The above visual gives the simulated 95% ranges from the stable-giving period for both giving categories.  Since the original data from which this simulation was formulated represented a 90% confidence interval, that will translate through the simulations.  Therefore, we can expect that there is an 85% chance that giving will fall in the ranges depicted above, which means there is a 15% chance that giving will fall outside of those ranges &amp;ndash; 7.5% for both higher and lower giving.&lt;/p&gt;
+&lt;p&gt;With this in mind, we can define the risk of each category as the giving level at which there is a 7.5% chance giving will fall below that level.&lt;/p&gt;
+&lt;h1 id=&#34;the-recommendation&#34;&gt;The Recommendation&lt;/h1&gt;
+&lt;p&gt;Finally, we are at a point to define the risk of different distributions of development focus between corporate giving and GS giving.&lt;/p&gt;
+&lt;p&gt;The code below determine for each simulation whether the total giving for the year (the sum of corporate and GS giving) is less than the average annual&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-r&#34;&gt;avg &amp;lt;- (cos_avg + GS_avg)
+
+est_loss_stable &amp;lt;- function(t, w) {
+  total &amp;lt;- t
+  weight &amp;lt;- w * total
+  break_even &amp;lt;- t / 2 * avg 
+
+  all_years_stable &amp;lt;- bind_rows(GS_years, cos_years) %&amp;gt;%
+    select(-cum_total) %&amp;gt;%
+    filter(as.numeric(year) &amp;gt; 5) %&amp;gt;%
+    pivot_wider(names_from = category, values_from = year_total) %&amp;gt;%
+    mutate(loss = ifelse(
+      break_even &amp;gt; (GS * (weight) + cos * (total - weight)), 1, 0
+  ))
+  est_df_stable &amp;lt;- tibble(total = t, weight = w,
+                 loss_prob = mean(all_years_stable$loss))
+  est_df_stable
+}
+
+est_loss_startup &amp;lt;- function(t, w) {
+  total &amp;lt;- t
+  weight &amp;lt;- w * total
+    break_even &amp;lt;- t / 2 * avg 
+    
+    all_years_startup &amp;lt;- bind_rows(GS_years, cos_years) %&amp;gt;%
+    select(-cum_total) %&amp;gt;%
+    filter(as.numeric(year) &amp;lt; 6) %&amp;gt;%
+    pivot_wider(names_from = category, values_from = year_total) %&amp;gt;%
+    mutate(loss = ifelse(
+      break_even &amp;gt; (GS * (weight) + cos * (total - weight)), 1, 0
+  ))
+
+est_df_startup &amp;lt;&amp;lt;- tibble(total = t, weight = w,
+                 loss_prob = mean(all_years_startup$loss))
+est_df_startup
+}
+
+
+est_table &amp;lt;- expand_grid(t = 1:5, w = seq(from = 0, to = 1, by = .05))
+
+est_df_stable &amp;lt;- map2_df(est_table$t, est_table$w, est_loss_stable)
+est_df_startup &amp;lt;- map2_df(est_table$t, est_table$w, est_loss_startup)
+
+est_df_stable %&amp;gt;%
+  ggplot(aes(weight, loss_prob, group = total)) +
+  geom_line() +
+  theme_minimal() +
+  labs(x = &amp;quot;Ratio of GS:Corporate Development Focus&amp;quot;,
+       y = &amp;quot;Probability of Loss&amp;quot;,
+       title = &amp;quot;Risk of Loss during Stable Years&amp;quot;) +
+  scale_y_continuous(labels = percent, limits = c(0, 1))
+&lt;/code&gt;&lt;/pre&gt;
+&lt;img src=&#34;https://spencerschien.info/post/interview_case_study/analysis/index_files/figure-html/breakeven-1.png&#34; width=&#34;672&#34; /&gt;
+&lt;pre&gt;&lt;code class=&#34;language-r&#34;&gt;est_df_startup %&amp;gt;%
+  ggplot(aes(weight, loss_prob, group = total)) +
+  geom_line() +
+  theme_minimal() +
+  labs(x = &amp;quot;Ratio of GS:Corporate Development Focus&amp;quot;,
+       y = &amp;quot;Probability of Loss&amp;quot;,
+       title = &amp;quot;Risk of Loss during Start-up Years&amp;quot;) +
+  scale_y_continuous(labels = percent, limits = c(0, 1))
+&lt;/code&gt;&lt;/pre&gt;
+&lt;div class=&#34;figure&#34;&gt;
+&lt;img src=&#34;https://spencerschien.info/post/interview_case_study/analysis/index_files/figure-html/breakeven-2.png&#34; alt=&#34;Loss here defined as any annual giving total less than the expected average given an equal distribution of focus between Giving Society and Corporate giving.&#34; width=&#34;672&#34; /&gt;
+&lt;p class=&#34;caption&#34;&gt;Figure 1: Loss here defined as any annual giving total less than the expected average given an equal distribution of focus between Giving Society and Corporate giving.&lt;/p&gt;
+&lt;/div&gt;
+&lt;p&gt;Based on this model, the optimal distribution of development staff would maximize focus on &lt;em&gt;Giving Society&lt;/em&gt; giving, especially in startup years (i.e. first years of implementation for &lt;strong&gt;both&lt;/strong&gt; types of giving).  The level to which it is maximized should be determined by the non-monetary value of the corporate engagements.&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>Recommendation to Leadership</title>
+      <link>https://spencerschien.info/post/interview_case_study/recommendation/</link>
+      <pubDate>Sat, 14 Mar 2020 00:00:00 +0000</pubDate>
+      <guid>https://spencerschien.info/post/interview_case_study/recommendation/</guid>
+      <description>&lt;h1 id=&#34;recommendation&#34;&gt;Recommendation&lt;/h1&gt;
+&lt;p&gt;The optimal distribution of development staff is to &lt;strong&gt;maximize focus on &lt;em&gt;Giving Society&lt;/em&gt; giving, especially in startup years&lt;/strong&gt; (i.e. first years of implementation for &lt;em&gt;both&lt;/em&gt; types of giving).&lt;/p&gt;
+&lt;h1 id=&#34;the-problem&#34;&gt;The Problem&lt;/h1&gt;
+&lt;p&gt;The purpose of this report is to provide a recommendation regarding the optimal distribution of Shocjin Nonprofit development staff between corporate giving and &lt;em&gt;Giving Society&lt;/em&gt; giving.&lt;/p&gt;
+&lt;p&gt;To make this recommendation, the Data Science team conducted a survey to collect giving data from Shocjin Nonprofit sites  With this data, we have been able to run simulations that recreate giving ranges we can expect from the two giving categories.&lt;/p&gt;
+&lt;p&gt;Our recommendation is based on these ranges and the probability of a site not meeting a benchmark amount of total giving in a year, which we are considering a loss.&lt;/p&gt;
+&lt;img src=&#34;https://spencerschien.info/post/interview_case_study/recommendation/index_files/figure-html/unnamed-chunk-1-1.png&#34; width=&#34;672&#34; /&gt;
+&lt;p&gt;&lt;strong&gt;These ranges represent the giving that Shocjin Nonprofit sites can expect to receive on an annual basis once both giving programs are more than a few years old.&lt;/strong&gt;&lt;/p&gt;
+&lt;h1 id=&#34;the-analysis&#34;&gt;The Analysis&lt;/h1&gt;
+&lt;p&gt;We have made the assumption that the sum of the averages (represented by the dotted lines above) for both categories would be a break-even point, where Shocjin Nonprofit sites are receiving as much money as they need to operate, and everything below that would be considered a loss.&lt;/p&gt;
+&lt;p&gt;The figures below represent the risk of experiencing a loss for both startup years and for stable years.&lt;/p&gt;
+&lt;div class=&#34;figure&#34; style=&#34;text-align: center&#34;&gt;
+&lt;img src=&#34;https://spencerschien.info/post/interview_case_study/recommendation/index_files/figure-html/unnamed-chunk-2-1.png&#34; alt=&#34;Risk of Loss During Startup Years&#34; width=&#34;90%&#34; /&gt;
+&lt;p class=&#34;caption&#34;&gt;Figure 1: Risk of Loss During Startup Years&lt;/p&gt;
+&lt;/div&gt;&lt;div class=&#34;figure&#34; style=&#34;text-align: center&#34;&gt;
+&lt;img src=&#34;https://spencerschien.info/post/interview_case_study/recommendation/index_files/figure-html/unnamed-chunk-2-2.png&#34; alt=&#34;Risk of Loss During Stable Years&#34; width=&#34;90%&#34; /&gt;
+&lt;p class=&#34;caption&#34;&gt;Figure 2: Risk of Loss During Stable Years&lt;/p&gt;
+&lt;/div&gt;
+&lt;p&gt;In both cases, the risk is minimized as more focus if given to &lt;em&gt;Giving Society&lt;/em&gt; giving.  This is because corporate giving is much more volatile, with a larger range of gift sizes and a smaller number of gifts received each year.&lt;/p&gt;
+&lt;h1 id=&#34;the-recommendation&#34;&gt;The Recommendation&lt;/h1&gt;
+&lt;p&gt;The optimal distribution of development staff is to &lt;strong&gt;maximize focus on &lt;em&gt;Giving Society&lt;/em&gt; giving, especially in startup years&lt;/strong&gt; (i.e. first years of implementation for &lt;em&gt;both&lt;/em&gt; types of giving).&lt;/p&gt;
+&lt;p&gt;The level to which it is maximized should be determined by the non-monetary value of the corporate engagements.&lt;/p&gt;
+&lt;h2 id=&#34;caveats&#34;&gt;Caveats&lt;/h2&gt;
+&lt;p&gt;The simulations upon which this recommendation is based assume that there are no diminishing returns, either over time (i.e. supply doesn&amp;rsquo;t dwindle as the site cycles through new individuals and corporations every year) or in a single year (i.e. a second development manager would experience the same number of engagements and rate of success).&lt;/p&gt;
+&lt;p&gt;If these assumptions do not remain true, the accuracy of this model will falter.  The distribution of gift sizes and number of gifts should therefore be monitored on an ongoing basis so the model and recommendation can be adjusted if necessary.&lt;/p&gt;
+&lt;p&gt;Also, as mentioned above, we assume there are non-monetary returns for both types of engagement.  Quantifying these returns and gathering data on these values should be done in the future to enhance the model and recommendations.&lt;/p&gt;
+</description>
+    </item>
+    
+  </channel>
+</rss>

@@ -1,0 +1,1726 @@
+<!DOCTYPE html><html lang="en-us" >
+
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  
+  
+  
+    <meta name="generator" content="Wowchemy 5.4.0 for Hugo" />
+  
+
+  
+  
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+  
+  
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  
+
+  
+  
+  
+    
+      
+      <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=EB+Garamond&Roboto+Mono&display=swap">
+      <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=EB+Garamond&Roboto+Mono&display=swap" media="print" onload="this.media='all'">
+    
+  
+
+  
+  
+  
+  
+  
+    
+    
+    
+  
+  
+
+  <meta name="author" content="Spencer Schien" />
+
+  
+  
+  
+    
+  
+  <meta name="description" content="Second of three posts on a case study I completed as part of a Data Scientist interview process." />
+
+  
+  <link rel="alternate" hreflang="en-us" href="https://spencerschien.info/post/interview_case_study/analysis/" />
+
+  
+  
+  
+    <meta name="theme-color" content="#CB4335" />
+  
+
+  
+  
+
+  
+
+  <link rel="stylesheet" href="/css/vendor-bundle.min.f1ecf783c14edc00c9320c205831ad8e.css" media="print" onload="this.media='all'">
+
+  
+  
+  
+    
+    
+
+    
+    
+    
+    
+      
+      
+    
+    
+    
+
+    
+    
+    
+      
+    
+    
+      
+      
+        
+          <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@10.2.1/build/styles/github.min.css" crossorigin="anonymous" title="hl-light" media="print" onload="this.media='all'">
+          <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@10.2.1/build/styles/dracula.min.css" crossorigin="anonymous" title="hl-dark" media="print" onload="this.media='all'" disabled>
+        
+      
+    
+
+    
+    
+    
+
+    
+
+    
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+        
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+  
+
+  
+  
+  
+  
+  
+  <link rel="stylesheet" href="/css/wowchemy.f0475b24c2cc3ef34f8f82a72e08cf2f.css" />
+
+  
+
+
+
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-151075066-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+
+  function gtag() {
+      dataLayer.push(arguments);
+  }
+
+  function trackOutboundLink(url, target) {
+    gtag('event', 'click', {
+         'event_category': 'outbound',
+         'event_label': url,
+         'transport_type': 'beacon',
+         'event_callback': function () {
+           if (target !== '_blank') {
+             document.location = url;
+           }
+         }
+    });
+    console.debug("Outbound link clicked: " + url);
+  }
+
+  function onClickCallback(event) {
+    if ((event.target.tagName !== 'A') || (event.target.host === window.location.host)) {
+      return;
+    }
+    trackOutboundLink(event.target, event.target.getAttribute('target'));  
+  }
+
+  gtag('js', new Date());
+  gtag('config', 'UA-151075066-1', {});
+  gtag('set', {'cookie_flags': 'SameSite=None;Secure'});
+
+  
+  document.addEventListener('click', onClickCallback, false);
+</script>
+
+
+  
+
+  
+
+  
+
+
+
+
+  
+  
+  
+
+  
+
+  
+    <link rel="manifest" href="/manifest.webmanifest" />
+  
+
+  <link rel="icon" type="image/png" href="/media/icon_hu367e19900c6e4898bd873f1421839d81_18043_32x32_fill_lanczos_center_3.png" />
+  <link rel="apple-touch-icon" type="image/png" href="/media/icon_hu367e19900c6e4898bd873f1421839d81_18043_180x180_fill_lanczos_center_3.png" />
+
+  <link rel="canonical" href="https://spencerschien.info/post/interview_case_study/analysis/" />
+
+  
+  
+  
+  
+  
+  
+  
+  
+    
+  
+  
+
+  
+  
+    
+    
+  
+  <meta property="twitter:card" content="summary_large_image" />
+  
+  <meta property="og:site_name" content="Spencer Schien" />
+  <meta property="og:url" content="https://spencerschien.info/post/interview_case_study/analysis/" />
+  <meta property="og:title" content="Full Case Study Documentation | Spencer Schien" />
+  <meta property="og:description" content="Second of three posts on a case study I completed as part of a Data Scientist interview process." /><meta property="og:image" content="https://spencerschien.info/post/interview_case_study/analysis/featured.png" />
+    <meta property="twitter:image" content="https://spencerschien.info/post/interview_case_study/analysis/featured.png" /><meta property="og:locale" content="en-us" />
+  
+    
+      <meta
+        property="article:published_time"
+        content="2020-03-14T00:00:00&#43;00:00"
+      />
+    
+    <meta property="article:modified_time" content="2020-03-14T17:18:25-05:00">
+  
+
+  
+
+
+    
+
+
+
+
+
+
+  
+
+
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://spencerschien.info/post/interview_case_study/analysis/"
+  },
+  "headline": "Full Case Study Documentation",
+  
+  "image": [
+    "https://spencerschien.info/post/interview_case_study/analysis/featured.png"
+  ],
+  
+  "datePublished": "2020-03-14T00:00:00Z",
+  "dateModified": "2020-03-14T17:18:25-05:00",
+  
+  "author": {
+    "@type": "Person",
+    "name": "Spencer Schien"
+  },
+  
+  "publisher": {
+    "@type": "Organization",
+    "name": "Spencer Schien",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://spencerschien.info/media/icon_hu367e19900c6e4898bd873f1421839d81_18043_192x192_fill_lanczos_center_3.png"
+    }
+  },
+  "description": "Second of three posts on a case study I completed as part of a Data Scientist interview process."
+}
+</script>
+
+  
+
+  
+
+  
+
+  
+
+
+
+
+
+  <title>Full Case Study Documentation | Spencer Schien</title>
+</head>
+
+
+<body id="top" data-spy="scroll" data-offset="70" data-target="#TableOfContents" class="page-wrapper   " data-wc-page-id="49a00d6a22ee57074b7142973020c577" >
+
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  <script src="/js/wowchemy-init.min.8f76bdc9e086322ed5147724ebba3d06.js"></script>
+
+  
+
+
+<aside class="search-modal" id="search">
+  <div class="container">
+    <section class="search-header">
+
+      <div class="row no-gutters justify-content-between mb-3">
+        <div class="col-6">
+          <h1>Search</h1>
+        </div>
+        <div class="col-6 col-search-close">
+          <a class="js-search" href="#" aria-label="Close"><i class="fas fa-times-circle text-muted" aria-hidden="true"></i></a>
+        </div>
+      </div>
+
+      <div id="search-box">
+        
+        <input name="q" id="search-query" placeholder="Search..." autocapitalize="off"
+        autocomplete="off" autocorrect="off" spellcheck="false" type="search" class="form-control"
+        aria-label="Search...">
+        
+      </div>
+
+      
+      
+
+      
+
+    </section>
+    <section class="section-search-results">
+
+      <div id="search-hits">
+        
+      </div>
+
+    </section>
+  </div>
+</aside>
+
+
+
+  <div class="page-header">
+    
+
+
+
+
+
+
+
+
+
+
+
+
+<header class="header--fixed">
+  <nav class="navbar navbar-expand-lg navbar-light compensate-for-scrollbar" id="navbar-main">
+    <div class="container-xl">
+
+      
+      <div class="d-none d-lg-inline-flex">
+        <a class="navbar-brand" href="/">Spencer Schien</a>
+      </div>
+      
+
+      
+      <button type="button" class="navbar-toggler" data-toggle="collapse"
+              data-target="#navbar-content" aria-controls="navbar-content" aria-expanded="false" aria-label="Toggle navigation">
+      <span><i class="fas fa-bars"></i></span>
+      </button>
+      
+
+      
+      <div class="navbar-brand-mobile-wrapper d-inline-flex d-lg-none">
+        <a class="navbar-brand" href="/">Spencer Schien</a>
+      </div>
+      
+
+      
+      
+      <div class="navbar-collapse main-menu-item collapse justify-content-start" id="navbar-content">
+
+        
+        <ul class="navbar-nav d-md-inline-flex">
+          
+
+          
+
+          
+          
+          
+            
+          
+
+          
+
+          
+          
+          
+          
+
+          
+            
+              
+              
+            
+            
+              
+              
+              
+                
+              
+              
+            
+          
+
+          <li class="nav-item">
+            <a class="nav-link " href="/#about"><span>Home</span></a>
+          </li>
+
+          
+          
+
+          
+
+          
+          
+          
+            
+          
+
+          
+
+          
+          
+          
+          
+
+          
+            
+              
+              
+            
+            
+              
+              
+              
+                
+              
+              
+            
+          
+
+          <li class="nav-item">
+            <a class="nav-link " href="/#posts"><span>Posts</span></a>
+          </li>
+
+          
+          
+
+          
+
+          
+          
+          
+            
+          
+
+          
+
+          
+          
+          
+          
+
+          
+            
+              
+              
+            
+            
+              
+              
+              
+                
+              
+              
+            
+          
+
+          <li class="nav-item">
+            <a class="nav-link " href="/#projects"><span>Projects</span></a>
+          </li>
+
+          
+          
+
+          
+
+          
+          
+          
+            
+          
+
+          
+
+          
+          
+          
+          
+
+          
+            
+              
+              
+            
+            
+              
+              
+              
+                
+              
+              
+            
+          
+
+          <li class="nav-item">
+            <a class="nav-link " href="/#contact"><span>Contact</span></a>
+          </li>
+
+          
+          
+
+        
+
+          
+        </ul>
+      </div>
+
+      <ul class="nav-icons navbar-nav flex-row ml-auto d-flex pl-md-2">
+
+        
+        
+          
+            
+            <li class="nav-item d-none d-lg-inline-flex">
+              <a class="nav-link" href="https://twitter.com/MrPecners" data-toggle="tooltip" data-placement="bottom" title="Follow me on Twitter" target="_blank" rel="noopener" aria-label="Follow me on Twitter">
+                <i class="fab fa-twitter" aria-hidden="true"></i>
+              </a>
+            </li>
+          
+        
+
+        
+        
+        <li class="nav-item">
+          <a class="nav-link js-search" href="#" aria-label="Search"><i class="fas fa-search" aria-hidden="true"></i></a>
+        </li>
+        
+
+        
+        
+        <li class="nav-item dropdown theme-dropdown">
+          <a href="#" class="nav-link" data-toggle="dropdown" aria-haspopup="true" aria-label="Display preferences">
+            <i class="fas fa-moon" aria-hidden="true"></i>
+          </a>
+          <div class="dropdown-menu">
+            <a href="#" class="dropdown-item js-set-theme-light">
+              <span>Light</span>
+            </a>
+            <a href="#" class="dropdown-item js-set-theme-dark">
+              <span>Dark</span>
+            </a>
+            <a href="#" class="dropdown-item js-set-theme-auto">
+              <span>Automatic</span>
+            </a>
+          </div>
+        </li>
+        
+
+        
+        
+
+      </ul>
+
+    </div>
+  </nav>
+</header>
+
+
+  </div>
+
+  <div class="page-body">
+    <article class="article">
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+  
+  
+<div class="article-container pt-3">
+  <h1>Full Case Study Documentation</h1>
+
+  
+
+  
+    
+
+
+<div class="article-metadata">
+
+  
+  
+  
+  
+  <div>
+    
+
+  <span class="author-highlighted">
+      <a href="/author/spencer-schien/">Spencer Schien</a></span>
+  </div>
+  
+  
+
+  
+  <span class="article-date">
+    
+    
+      
+          Last updated on
+      
+    
+    Mar 14, 2020
+  </span>
+  
+
+  
+
+  
+  <span class="middot-divider"></span>
+  <span class="article-reading-time">
+    16 min read
+  </span>
+  
+
+  
+  
+  
+  
+  
+  
+
+  
+  
+  <span class="middot-divider"></span>
+  <span class="article-categories">
+    <i class="fas fa-folder mr-1"></i><a href="/category/interview-case-study/">Interview Case Study</a></span>
+  
+
+</div>
+
+    
+
+
+
+
+
+  
+</div>
+
+
+
+  <div class="article-container">
+
+    <div class="article-style">
+      <h1 id="introduction">Introduction</h1>
+<h2 id="purpose">Purpose</h2>
+<p>The purpose of this project is to provide a recommendation for the optimal allocation of development staff at Shocjin Nonprofit sites to either corporation/foundation giving or to <em>Giving Society</em> (GS) giving.  Based on the given survey data, it is implied that the numbers represent a stable state (i.e. the number of engagements and rate of success will not diminish with time as the site cycles through the local corporations or other giving populations).</p>
+<p>To arrive at a recommendation, the following process will be followed:</p>
+<ol>
+<li>Simulate annual giving for both corporations and GS.  This will create two dataframes in which each observation represents a gift.  Each will also simulate the number of years the gift will be extended.  Therefore, each dataframe will represent total commitments from a single year, including those that will be paid in the given year and those that will be anticipated in coming years.</li>
+<li>Wrap this simulation in a function so it can be used with <code>replicate()</code> to run a Monte Carlo simulation for a given year.</li>
+<li>Loop the simulation over multiple years to simulate giving trends extending beyond the typical life-cycle of a single year&rsquo;s gifts.  This method will allow the simulation to reach a stable state, where the additive influence of gifts accumulating and expiring has leveled off.</li>
+<li>Determine the range of giving that can be expected with 90% confidence during the stable state of giving for both groups.</li>
+<li>Make the recommendation that allows for an acceptable level of risk while still maintaining an adequate level of giving for each site.</li>
+</ol>
+<h2 id="further-questions-and-additional-data">Further Questions and Additional Data</h2>
+<p>This analysis and recommendation is based on distributions and probabilities of survey data, representing a 90% confidence interval.  The accuracy of any simulations are therefore limited and would be enhanced with access to the raw data.</p>
+<p><strong>Questions:</strong></p>
+<ul>
+<li>What impacts the distribution of the number of engagements per year?  If it is a function of the size of the city&rsquo;s population or economy, then more specific recommendations could be made to sites.</li>
+<li>Do we observe stable replacement of gifts over the years?  This simulation assumes that the answer is yes &ndash; meaning there is not a point where the giving supply is &ldquo;tapped out&rdquo;, so to speak.</li>
+<li>What other forms of return does a Shocjin Nonprofit site receive from engagements with corporations or individuals through the <em>Giving Society</em>?  This analysis is based solely on the financial return in terms of giving, but returns in the form of enhanced recruitment, partnerships that might reduce or distribute costs, etc. could be considered as well.</li>
+</ul>
+<h1 id="modeling">Modeling</h1>
+<h2 id="1-simulating-the-data">1. Simulating the Data</h2>
+<p>First, we need to recreate a single year of giving for both corporate and GS giving.  The code below simulates the appropriate number of engagements, the success rate of engagements, the distribution of gift sizes, and the distribution of gift extensions.</p>
+<pre><code class="language-r">library(EnvStats) # for truncated distributions
+library(tidyverse) # for data manipulation and visualization
+library(scales) # for setting percentages and scales, specifically in visuals
+library(ggbeeswarm) # for creating the violin-like dot plot
+library(ggalt) # for dumbbell plot
+
+# set seed to ensure reproducibility
+set.seed(123) 
+
+# Randomly assign the number of new corporations engaged in the year
+# based on a truncated normal distribution; sd is estimated to ensure full 
+# range shows up in the samples. Samples are rounded to the nearest 
+# integer so we don't have partial engagements.
+new_cos &lt;- round(rnormTrunc(1, mean = 20, sd = 10/6, min = 15, max = 25), 0)
+
+# Assign the number of successes (i.e. gifts)
+success_cos &lt;- round(new_cos * .25, 0)
+
+# Set up mean and sd for the lognormal distribution
+# of gift sizes.  Both are estimates since real values
+# weren't provided.
+avg_cos &lt;- mean(c(log(50000), log(1000000)))
+stdev_cos &lt;- log(((1000000) - (50000))/success_cos)
+
+# Simulate single year gifts by sampling a truncated lognormal
+# distribution based on the values calculated above.
+dis_cos &lt;- rlnormTrunc(success_cos, avg_cos, stdev_cos, min = 50000, max = 1000000)
+
+# Make a dataframe out of this vector, adding the simulation index `N`,
+# the years each gift will be repeated `years_extended`, and the total
+# commitments represented by this year of giving `total_commitment`
+dis_cos &lt;- tibble(amount = dis_cos, N = 1, years_extended = rpois(success_cos, 2) + 1,
+              total_commitment = amount * years_extended)
+dis_cos
+</code></pre>
+<pre><code>## # A tibble: 5 x 4
+##    amount     N years_extended total_commitment
+##     &lt;dbl&gt; &lt;dbl&gt;          &lt;dbl&gt;            &lt;dbl&gt;
+## 1 529597.     1              3         1588790.
+## 2 170353.     1              5          851766.
+## 3 703527.     1              3         2110580.
+## 4 836028.     1              3         2508083.
+## 5  57346.     1              6          344074.
+</code></pre>
+<h2 id="2-wrapping-in-a-function">2. Wrapping in a Function</h2>
+<p>Next, we need to wrap this simulation in a function that will allow us to append sequential simulations to the same dataframe.  This is achieved with the following code, which makes the same parameter assignments as above:</p>
+<pre><code class="language-r">sim_cos &lt;- function() {
+  new_cos &lt;- round(rnormTrunc(1, mean = 20, sd = 10/6, min = 15, max = 25), 0)
+  success_cos &lt;- round(new_cos * .25, 0)
+  
+  
+  avg_cos &lt;- mean(c(log(50000), log(1000000)))
+  stdev_cos &lt;- log(((1000000) - (50000))/success_cos)
+  
+  # Make a base assignment with `dis_cos`, then a secondary assignment
+  # with `dis_cos1` that will be rewritten and appended to the base with
+  # each iteration.
+  if(is.null(dis_cos)) {
+    dis_cos &lt;- rlnormTrunc(success_cos, avg_cos, stdev_cos, min = 50000, max = 1000000)
+    dis_cos &lt;- tibble(amount = dis_cos, N = 1, 
+                      # `years_extended` set to follow Poisson distribution
+                      years_extended = rpois(success_cos, 2) + 1,
+                      total_commitment = amount * years_extended)
+  } else {
+    dis_cos1 &lt;- rlnormTrunc(success_cos, avg_cos, stdev_cos, min = 50000, max = 1000000)
+    dis_cos1 &lt;- tibble(amount = dis_cos1, N = max(dis_cos$N) + 1, 
+                       years_extended = rpois(success_cos, 2) + 1,
+                   total_commitment = amount * years_extended) 
+  }
+  dis_cos &lt;&lt;- bind_rows(dis_cos, dis_cos1)
+}
+
+# Test the function.  Output confirms that simulation is
+# successful and appended to the base.
+test_sim &lt;- sim_cos()
+test_sim
+</code></pre>
+<pre><code>## # A tibble: 10 x 4
+##     amount     N years_extended total_commitment
+##      &lt;dbl&gt; &lt;dbl&gt;          &lt;dbl&gt;            &lt;dbl&gt;
+##  1 529597.     1              3         1588790.
+##  2 170353.     1              5          851766.
+##  3 703527.     1              3         2110580.
+##  4 836028.     1              3         2508083.
+##  5  57346.     1              6          344074.
+##  6 380189.     2              1          380189.
+##  7 277811.     2              2          555622.
+##  8  68134.     2              6          408802.
+##  9 739936.     2              5         3699679.
+## 10 104654.     2              4          418618.
+</code></pre>
+<p>The above dataframe represents two simulations of a single year of giving for corporations.  So, we have our function working.  Now we can run it for real to simulate a single year of giving one thousand times (or more, if we wanted).</p>
+<pre><code class="language-r"># Clear the old `dis_cos` value from the envirnment 
+# so we can start anew.
+rm(dis_cos)
+
+# initialize the assignments needed by the function
+dis_cos &lt;- dis_cos1 &lt;- NULL
+
+# Use `replicate()` for the Monte Carlo simulation
+replicate(1000, sim_cos())
+</code></pre>
+<p>Now to make a quick inspection of the data we just simulated, we can review the distribution of both the gift sizes and the number of years the gifts are extended.</p>
+<pre><code class="language-r">dis_cos %&gt;%
+  ggplot(aes(amount)) +
+  geom_histogram() +
+  theme_minimal() +
+  scale_x_continuous(labels = dollar) +
+  labs(title = &quot;Distribution of Simulated Gift Amounts&quot;)
+</code></pre>
+<img src="/post/interview_case_study/analysis/index_files/figure-html/review-1.png" width="672" />
+<pre><code class="language-r">dis_cos %&gt;%
+  ggplot(aes(years_extended)) +
+  geom_histogram() +
+  theme_minimal() +
+  scale_x_continuous(breaks = c(seq(1, max(dis_cos$years_extended), by = 1))) +
+  labs(title = &quot;Distribution of Simulated Number of Years Extended&quot;)
+</code></pre>
+<img src="/post/interview_case_study/analysis/index_files/figure-html/review-2.png" width="672" />
+<p>Ranges and distributions look as-expected, so we can move on to the next step which is to loop this simulation over multiple years.</p>
+<h2 id="3-loop-over-multiple-years">3. Loop over Multiple Years</h2>
+<p>For this loop, we will edit the function slightly to add columns tracking the giving over each year.</p>
+<pre><code class="language-r"># rewritten function with additional columns
+sim_cos &lt;- function() {
+  new_cos &lt;- round(rnormTrunc(1, mean = 20, sd = 10/6, min = 15, max = 25), 0)
+  success_cos &lt;- round(new_cos * .25, 0)
+  
+  avg_cos &lt;- mean(c(log(50000), log(1000000)))
+  stdev_cos &lt;- log(((1000000) - (50000))/success_cos)
+  
+  if(is.null(dis_cos)) {
+    dis_cos &lt;- rlnormTrunc(success_cos, avg_cos, stdev_cos, min = 50000, max = 1000000)
+    dis_cos &lt;- tibble(amount = dis_cos, N = 1, 
+                      years_extended = rpois(success_cos, 2) + 1,
+                  total_commitment = amount * years_extended)
+  } else {
+    dis_cos1 &lt;- rlnormTrunc(success_cos, avg_cos, stdev_cos, min = 50000, max = 1000000)
+    dis_cos1 &lt;- tibble(amount = dis_cos1, N = max(dis_cos$N) + 1, 
+                       years_extended = rpois(success_cos, 2) + 1,
+                   total_commitment = amount * years_extended) 
+  }
+  dis_cos &lt;&lt;- bind_rows(dis_cos, dis_cos1) %&gt;%
+    # add the columns to track giving over the years
+    mutate(start_year = i,
+           year_1 = ifelse(start_year &lt;= 0 &amp; start_year + years_extended &gt;= 1, amount, 0),
+           year_2 = ifelse(start_year &lt;= 1 &amp; start_year + years_extended &gt;= 2, amount, 0),
+           year_3 = ifelse(start_year &lt;= 2 &amp; start_year + years_extended &gt;= 3, amount, 0),
+           year_4 = ifelse(start_year &lt;= 3 &amp; start_year + years_extended &gt;= 4, amount, 0),
+           year_5 = ifelse(start_year &lt;= 4 &amp; start_year + years_extended &gt;= 5, amount, 0),
+           year_6 = ifelse(start_year &lt;= 5 &amp; start_year + years_extended &gt;= 6, amount, 0),
+           year_7 = ifelse(start_year &lt;= 6 &amp; start_year + years_extended &gt;= 7, amount, 0),
+           year_8 = ifelse(start_year &lt;= 7 &amp; start_year + years_extended &gt;= 8, amount, 0),
+           year_9 = ifelse(start_year &lt;= 8 &amp; start_year + years_extended &gt;= 9, amount, 0),
+           year_10 = ifelse(start_year &lt;= 9 &amp; start_year + years_extended &gt;= 10, amount, 0))
+}
+
+# Initialize new value that will be the full dataframe
+cos &lt;- NULL
+
+# loop over 10 years starting with 0
+# to facilitate addition of `years_extended`
+for(i in 0:9) {
+  
+  # re-initialize inside the loop
+  dis_cos &lt;- dis_cos1 &lt;- NULL
+  
+  # Monte Carlo
+  replicate(1000, sim_cos())
+  
+  # Append each round of simulations
+  cos &lt;- bind_rows(cos, dis_cos)
+}
+</code></pre>
+<p>The result of the above code is a dataframe that represents one thousand simulations of a single year of corporate giving repeated sequentially for 10 years (i.e. 10,000 year-giving simulations).  The dataframe has the following attributes:</p>
+<pre><code class="language-r">glimpse(cos)
+</code></pre>
+<pre><code>## Rows: 49,935
+## Columns: 15
+## $ amount           &lt;dbl&gt; 205220.94, 439211.78, 225424.40, 680839.15, 362518...
+## $ N                &lt;dbl&gt; 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 4,...
+## $ years_extended   &lt;dbl&gt; 6, 4, 2, 2, 2, 3, 3, 2, 4, 1, 3, 3, 2, 1, 3, 4, 3,...
+## $ total_commitment &lt;dbl&gt; 1231325.65, 1756847.13, 450848.81, 1361678.30, 725...
+## $ start_year       &lt;int&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,...
+## $ year_1           &lt;dbl&gt; 205220.94, 439211.78, 225424.40, 680839.15, 362518...
+## $ year_2           &lt;dbl&gt; 205220.94, 439211.78, 225424.40, 680839.15, 362518...
+## $ year_3           &lt;dbl&gt; 205220.94, 439211.78, 0.00, 0.00, 0.00, 242954.82,...
+## $ year_4           &lt;dbl&gt; 205220.94, 439211.78, 0.00, 0.00, 0.00, 0.00, 0.00...
+## $ year_5           &lt;dbl&gt; 205220.9, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, ...
+## $ year_6           &lt;dbl&gt; 205220.9, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, ...
+## $ year_7           &lt;dbl&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,...
+## $ year_8           &lt;dbl&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,...
+## $ year_9           &lt;dbl&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,...
+## $ year_10          &lt;dbl&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,...
+</code></pre>
+<h2 id="4-determine-expected-range">4. Determine Expected Range</h2>
+<p>Now to the good stuff &ndash; visualizing and analyzing our full range of simulated data to come up with expected giving ranges.</p>
+<pre><code class="language-r"># Before viz, we need to tidy the data a bit.
+# Below code transforms from wide to long format,
+# Which is easier to plot.  Also calculates annual
+# giving totals for each simulation.
+cos_years &lt;- cos %&gt;%
+  group_by(N) %&gt;%
+  summarise_at(vars(year_1:year_10), sum) %&gt;%
+  pivot_longer(cols = c(2:11), names_to = &quot;year&quot;, values_to = &quot;year_amount&quot;) %&gt;%
+  modify_at(&quot;year&quot;, fct_relevel, levels = c(&quot;year_1&quot;,
+                                            &quot;year_2&quot;,
+                                            &quot;year_3&quot;,
+                                            &quot;year_4&quot;,
+                                            &quot;year_5&quot;,
+                                            &quot;year_6&quot;,
+                                            &quot;year_7&quot;,
+                                            &quot;year_8&quot;,
+                                            &quot;year_9&quot;,
+                                            &quot;year_10&quot;)) %&gt;%
+  group_by(N, year) %&gt;%
+  summarise(year_total = sum(year_amount)) %&gt;%
+  mutate(cum_total = cumsum(year_total),
+         category = &quot;cos&quot;)
+
+
+# Plot the annual giving for each simulation.
+cos_years %&gt;%
+  ggplot(aes(year, year_total)) +
+  geom_line(aes(group = N), alpha = 0.5) +
+  theme_minimal() +
+  scale_y_continuous(labels = dollar)+
+  expand_limits(y = 0) +
+  labs(title = &quot;1,000 10-Year Corporate Giving Simulations&quot;,
+       y = &quot;Total Gifts Received&quot;,
+       x = &quot;Year of Simulation&quot;)
+</code></pre>
+<img src="/post/interview_case_study/analysis/index_files/figure-html/visualize-1.png" width="672" />
+<p>As is evident from this visual, giving does in fact reach a more stable state by <code>year_10</code>, and it is from this stable state that we will take our estimate of expected corporate giving.  To do so, we will calculate the 90% confidence interval for years six through ten.</p>
+<pre><code class="language-r"># Filter data for years 6 - 10
+cos_latter &lt;- cos %&gt;%
+  group_by(N) %&gt;%
+  summarise_at(vars(year_1:year_10), sum) %&gt;%
+  pivot_longer(cols = c(2:11), names_to = &quot;year&quot;, values_to = &quot;year_amount&quot;) %&gt;%
+  modify_at(&quot;year&quot;, fct_relevel, levels = c(&quot;year_1&quot;,
+                                            &quot;year_2&quot;,
+                                            &quot;year_3&quot;,
+                                            &quot;year_4&quot;,
+                                            &quot;year_5&quot;,
+                                            &quot;year_6&quot;,
+                                            &quot;year_7&quot;,
+                                            &quot;year_8&quot;,
+                                            &quot;year_9&quot;,
+                                            &quot;year_10&quot;)) %&gt;%
+  mutate(year = as.numeric(year)) %&gt;%
+  filter(year &gt; 5)
+
+# Will calculate the CI at the end to avoid loading
+# Rmisc package which causes conflicts
+</code></pre>
+<h2 id="adding-giving-society-simulation">Adding Giving Society Simulation</h2>
+<p>Now it&rsquo;s time to run the same analysis over the GS giving.  The below code does the same as we did above for corporate giving:</p>
+<pre><code class="language-r">sim_GS &lt;- function() {
+  new_GS &lt;- round(rnormTrunc(1, mean = 350, sd = 300/6, min = 200, max = 500), 0)
+  success &lt;- round(new_GS * .5, 0)
+  
+  min &lt;- 5000
+  max &lt;- 50000
+  avg &lt;- mean(c(log(5000), log(50000)))
+  stdev &lt;- log(((50000) - (5000))/success)
+  
+  if(is.null(dis)) {
+    dis &lt;- rlnormTrunc(success, avg, stdev, min = min, max = max)
+    dis &lt;- tibble(amount = dis, N = 1, years_extended = sample(c(1, 2, 3), 
+                                                               size = success, 
+                                                               prob = c(.5, .4, .1), 
+                                                               replace = TRUE),
+                  total_commitment = amount * years_extended)
+  } else {
+    dis1 &lt;- rlnormTrunc(success, avg, stdev, min = min, max = max)
+    dis1 &lt;- tibble(amount = dis1, N = max(dis$N) + 1, 
+                   years_extended = sample(c(1, 2, 3), 
+                                           size = success, 
+                                           prob = c(.5, .4, .1), 
+                                           replace = TRUE),
+                   total_commitment = amount * years_extended) 
+  }
+  dis &lt;&lt;- bind_rows(dis, dis1) %&gt;%
+    mutate(start_year = i,
+           year_1 = ifelse(start_year &lt;= 0 &amp; start_year + years_extended &gt;= 1, amount, 0),
+           year_2 = ifelse(start_year &lt;= 1 &amp; start_year + years_extended &gt;= 2, amount, 0),
+           year_3 = ifelse(start_year &lt;= 2 &amp; start_year + years_extended &gt;= 3, amount, 0),
+           year_4 = ifelse(start_year &lt;= 3 &amp; start_year + years_extended &gt;= 4, amount, 0),
+           year_5 = ifelse(start_year &lt;= 4 &amp; start_year + years_extended &gt;= 5, amount, 0),
+           year_6 = ifelse(start_year &lt;= 5 &amp; start_year + years_extended &gt;= 6, amount, 0),
+           year_7 = ifelse(start_year &lt;= 6 &amp; start_year + years_extended &gt;= 7, amount, 0),
+           year_8 = ifelse(start_year &lt;= 7 &amp; start_year + years_extended &gt;= 8, amount, 0),
+           year_9 = ifelse(start_year &lt;= 8 &amp; start_year + years_extended &gt;= 9, amount, 0),
+           year_10 = ifelse(start_year &lt;= 9 &amp; start_year + years_extended &gt;= 10, amount, 0))
+}
+
+GS &lt;- NULL
+
+for(i in 0:9) {
+  dis &lt;- dis1 &lt;- NULL
+  replicate(1000, sim_GS())
+  GS &lt;- bind_rows(GS, dis)
+  
+}
+
+GS_years &lt;- GS %&gt;%
+  group_by(N) %&gt;%
+  summarise_at(vars(year_1:year_10), sum) %&gt;%
+  pivot_longer(cols = c(2:11), names_to = &quot;year&quot;, values_to = &quot;year_amount&quot;) %&gt;%
+  group_by(N, year) %&gt;%
+  summarise(year_total = sum(year_amount)) %&gt;%
+  mutate(cum_total = cumsum(year_total),
+         category = &quot;GS&quot;) %&gt;%
+  modify_at(&quot;year&quot;, fct_relevel, levels = c(&quot;year_1&quot;,
+                                            &quot;year_2&quot;,
+                                            &quot;year_3&quot;,
+                                            &quot;year_4&quot;,
+                                            &quot;year_5&quot;,
+                                            &quot;year_6&quot;,
+                                            &quot;year_7&quot;,
+                                            &quot;year_8&quot;,
+                                            &quot;year_9&quot;,
+                                            &quot;year_10&quot;))
+GS_latter &lt;- GS %&gt;%
+  group_by(N) %&gt;%
+  summarise_at(vars(year_1:year_10), sum) %&gt;%
+  pivot_longer(cols = c(2:11), names_to = &quot;year&quot;, values_to = &quot;year_amount&quot;) %&gt;%
+  modify_at(&quot;year&quot;, fct_relevel, levels = c(&quot;year_1&quot;,
+                                            &quot;year_2&quot;,
+                                            &quot;year_3&quot;,
+                                            &quot;year_4&quot;,
+                                            &quot;year_5&quot;,
+                                            &quot;year_6&quot;,
+                                            &quot;year_7&quot;,
+                                            &quot;year_8&quot;,
+                                            &quot;year_9&quot;,
+                                            &quot;year_10&quot;)) %&gt;%
+  mutate(year = as.numeric(year)) %&gt;%
+  filter(year &gt; 5)
+
+GS_years %&gt;%
+  ggplot(aes(year, year_total)) +
+  geom_line(aes(group = N), alpha = .5) +
+  theme_minimal() +
+  scale_y_continuous(labels = dollar) +
+  expand_limits(y = 0) +
+  labs(title = &quot;1,000 10-Year GS Giving Simulations&quot;,
+       x = &quot;Total Gifts Received&quot;,
+       y = &quot;Year of Simulation&quot;)
+</code></pre>
+<img src="/post/interview_case_study/analysis/index_files/figure-html/GS-1.png" width="672" />
+<h1 id="analysis">Analysis</h1>
+<p>The visual below represents the average giving over this stable period.</p>
+<pre><code class="language-r">cos_avg &lt;- mean(cos_latter$year_amount)
+GS_avg &lt;- mean(GS_latter$year_amount)
+
+avg_df &lt;- tibble(category = c(&quot;Corporate&quot;, &quot;Giving Society&quot;),
+                 amount = c(cos_avg, GS_avg))
+
+avg_df %&gt;%
+  ggplot(aes(category, amount)) +
+  geom_col(width = .5) +
+  theme_minimal() +
+  scale_y_continuous(labels = dollar) +
+  labs(title = &quot;Average Annual Stable-State Giving&quot;,
+       x = &quot;Giving Category&quot;,
+       y = &quot;Average Annual Gift&quot;)
+</code></pre>
+<img src="/post/interview_case_study/analysis/index_files/figure-html/cis-1.png" width="672" />
+<p>This represents the 90% probability that the true mean will be represented within the span, which is a useful metric.  However, we want to also mitigate risk (i.e. the possibility that total gifts will come in lower than expected).</p>
+<p>As the 10-year line graphs demonstrated above, neither giving category will be expected to lose money once a stable state is reached (in initial simulations not represented here, corporate giving did show a potential for zero gifts in <code>year_1</code>).  Therefore, the risk should be assessed in terms of the lowest potential return.</p>
+<pre><code class="language-r"># define 95% range of data
+quant_cos &lt;- quantile(cos_latter$year_amount, c(.025, .975))
+quant_GS &lt;- quantile(GS_latter$year_amount, c(.025, .975))
+
+# combine in a dataframe for visualization
+quants_df &lt;- tibble(Corporate = quant_cos, &quot;Giving Society&quot; = quant_GS) %&gt;%
+  pivot_longer(1:2, names_to = &quot;category&quot;, values_to = &quot;amount&quot;) %&gt;%
+  group_by(category) %&gt;%
+  summarise(xend = min(amount),
+            x = max(amount))
+
+
+
+quants_df %&gt;%
+  ggplot(aes(y = &quot;&quot;)) +
+  geom_dumbbell(aes(xend = xend, x = x), size_x = 3, size_xend = 3) +
+  geom_vline(data = avg_df, aes(xintercept = amount), linetype = 3) +
+  geom_text(y = .7, x = avg_df$amount + avg_df$amount*.1,
+           label = paste(&quot;Average Annual Giving:&quot;, dollar(avg_df$amount), sep = &quot;\n&quot;),
+           size = 2) +
+  facet_wrap(~ category) +
+  theme_minimal() +
+  scale_x_continuous(labels = dollar, breaks = c(0, 2500000, 5000000, 7500000)) +
+  expand_limits(x = 0) +
+  labs(title = &quot;Expected Range of Giving&quot;,
+         subtitle = &quot;85% probability that giving will fall within this range&quot;,
+         x = &quot;&quot;,
+         y = &quot;&quot;) +
+  coord_flip()
+</code></pre>
+<img src="/post/interview_case_study/analysis/index_files/figure-html/range-1.png" width="672" />
+<p>The above visual gives the simulated 95% ranges from the stable-giving period for both giving categories.  Since the original data from which this simulation was formulated represented a 90% confidence interval, that will translate through the simulations.  Therefore, we can expect that there is an 85% chance that giving will fall in the ranges depicted above, which means there is a 15% chance that giving will fall outside of those ranges &ndash; 7.5% for both higher and lower giving.</p>
+<p>With this in mind, we can define the risk of each category as the giving level at which there is a 7.5% chance giving will fall below that level.</p>
+<h1 id="the-recommendation">The Recommendation</h1>
+<p>Finally, we are at a point to define the risk of different distributions of development focus between corporate giving and GS giving.</p>
+<p>The code below determine for each simulation whether the total giving for the year (the sum of corporate and GS giving) is less than the average annual</p>
+<pre><code class="language-r">avg &lt;- (cos_avg + GS_avg)
+
+est_loss_stable &lt;- function(t, w) {
+  total &lt;- t
+  weight &lt;- w * total
+  break_even &lt;- t / 2 * avg 
+
+  all_years_stable &lt;- bind_rows(GS_years, cos_years) %&gt;%
+    select(-cum_total) %&gt;%
+    filter(as.numeric(year) &gt; 5) %&gt;%
+    pivot_wider(names_from = category, values_from = year_total) %&gt;%
+    mutate(loss = ifelse(
+      break_even &gt; (GS * (weight) + cos * (total - weight)), 1, 0
+  ))
+  est_df_stable &lt;- tibble(total = t, weight = w,
+                 loss_prob = mean(all_years_stable$loss))
+  est_df_stable
+}
+
+est_loss_startup &lt;- function(t, w) {
+  total &lt;- t
+  weight &lt;- w * total
+    break_even &lt;- t / 2 * avg 
+    
+    all_years_startup &lt;- bind_rows(GS_years, cos_years) %&gt;%
+    select(-cum_total) %&gt;%
+    filter(as.numeric(year) &lt; 6) %&gt;%
+    pivot_wider(names_from = category, values_from = year_total) %&gt;%
+    mutate(loss = ifelse(
+      break_even &gt; (GS * (weight) + cos * (total - weight)), 1, 0
+  ))
+
+est_df_startup &lt;&lt;- tibble(total = t, weight = w,
+                 loss_prob = mean(all_years_startup$loss))
+est_df_startup
+}
+
+
+est_table &lt;- expand_grid(t = 1:5, w = seq(from = 0, to = 1, by = .05))
+
+est_df_stable &lt;- map2_df(est_table$t, est_table$w, est_loss_stable)
+est_df_startup &lt;- map2_df(est_table$t, est_table$w, est_loss_startup)
+
+est_df_stable %&gt;%
+  ggplot(aes(weight, loss_prob, group = total)) +
+  geom_line() +
+  theme_minimal() +
+  labs(x = &quot;Ratio of GS:Corporate Development Focus&quot;,
+       y = &quot;Probability of Loss&quot;,
+       title = &quot;Risk of Loss during Stable Years&quot;) +
+  scale_y_continuous(labels = percent, limits = c(0, 1))
+</code></pre>
+<img src="/post/interview_case_study/analysis/index_files/figure-html/breakeven-1.png" width="672" />
+<pre><code class="language-r">est_df_startup %&gt;%
+  ggplot(aes(weight, loss_prob, group = total)) +
+  geom_line() +
+  theme_minimal() +
+  labs(x = &quot;Ratio of GS:Corporate Development Focus&quot;,
+       y = &quot;Probability of Loss&quot;,
+       title = &quot;Risk of Loss during Start-up Years&quot;) +
+  scale_y_continuous(labels = percent, limits = c(0, 1))
+</code></pre>
+<div class="figure">
+<img src="/post/interview_case_study/analysis/index_files/figure-html/breakeven-2.png" alt="Loss here defined as any annual giving total less than the expected average given an equal distribution of focus between Giving Society and Corporate giving." width="672" />
+<p class="caption">Figure 1: Loss here defined as any annual giving total less than the expected average given an equal distribution of focus between Giving Society and Corporate giving.</p>
+</div>
+<p>Based on this model, the optimal distribution of development staff would maximize focus on <em>Giving Society</em> giving, especially in startup years (i.e. first years of implementation for <strong>both</strong> types of giving).  The level to which it is maximized should be determined by the non-monetary value of the corporate engagements.</p>
+
+    </div>
+
+    
+
+
+
+
+
+
+
+
+<div class="share-box">
+  <ul class="share">
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="https://twitter.com/intent/tweet?url=https://spencerschien.info/post/interview_case_study/analysis/&amp;text=Full%20Case%20Study%20Documentation" target="_blank" rel="noopener" class="share-btn-twitter" aria-label="twitter">
+          <i class="fab fa-twitter"></i>
+        </a>
+      </li>
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="https://www.facebook.com/sharer.php?u=https://spencerschien.info/post/interview_case_study/analysis/&amp;t=Full%20Case%20Study%20Documentation" target="_blank" rel="noopener" class="share-btn-facebook" aria-label="facebook-f">
+          <i class="fab fa-facebook-f"></i>
+        </a>
+      </li>
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="mailto:?subject=Full%20Case%20Study%20Documentation&amp;body=https://spencerschien.info/post/interview_case_study/analysis/" target="_blank" rel="noopener" class="share-btn-email" aria-label="envelope">
+          <i class="fas fa-envelope"></i>
+        </a>
+      </li>
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="https://www.linkedin.com/shareArticle?url=https://spencerschien.info/post/interview_case_study/analysis/&amp;title=Full%20Case%20Study%20Documentation" target="_blank" rel="noopener" class="share-btn-linkedin" aria-label="linkedin-in">
+          <i class="fab fa-linkedin-in"></i>
+        </a>
+      </li>
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="https://web.whatsapp.com/send?text=Full%20Case%20Study%20Documentation%20https://spencerschien.info/post/interview_case_study/analysis/" target="_blank" rel="noopener" class="share-btn-whatsapp" aria-label="whatsapp">
+          <i class="fab fa-whatsapp"></i>
+        </a>
+      </li>
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="https://service.weibo.com/share/share.php?url=https://spencerschien.info/post/interview_case_study/analysis/&amp;title=Full%20Case%20Study%20Documentation" target="_blank" rel="noopener" class="share-btn-weibo" aria-label="weibo">
+          <i class="fab fa-weibo"></i>
+        </a>
+      </li>
+    
+  </ul>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    
+
+
+
+  
+  
+  
+    
+  
+  
+  
+  <div class="media author-card content-widget-hr">
+    
+      
+      <a href="https://spencerschien.info/"><img class="avatar mr-3 avatar-circle" src="/author/spencer-schien/avatar_hu250418766eb33e2a3d6e52c32cca23d7_1539249_270x270_fill_q75_lanczos_center.jpg" alt="Spencer Schien"></a>
+    
+
+    <div class="media-body">
+      <h5 class="card-title"><a href="https://spencerschien.info/">Spencer Schien</a></h5>
+      <h6 class="card-subtitle">Manager of Data &amp; Impact</h6>
+      <p class="card-text">This is my bio.  There are many like it, but this one is mine.</p>
+      <ul class="network-icon" aria-hidden="true">
+  
+    
+    
+    
+      
+    
+    
+    
+    
+    
+      
+    
+    <li>
+      <a href="/#contact" >
+        <i class="fas fa-envelope"></i>
+      </a>
+    </li>
+  
+    
+    
+    
+      
+    
+    
+    
+    
+    
+      
+    
+    <li>
+      <a href="https://twitter.com/MrPecners" target="_blank" rel="noopener">
+        <i class="fab fa-twitter"></i>
+      </a>
+    </li>
+  
+    
+    
+    
+      
+    
+    
+    
+    
+    
+      
+    
+    <li>
+      <a href="https://github.com/Pecners" target="_blank" rel="noopener">
+        <i class="fab fa-github"></i>
+      </a>
+    </li>
+  
+    
+    
+    
+      
+    
+    
+    
+    
+    
+      
+    
+    <li>
+      <a href="https://www.linkedin.com/in/spencer-schien-521108102?lipi=urn%3Ali%3Apage%3Ad_flagship3_profile_view_base_contact_details%3B%2B6W31CyGQAmB0r3%2FVQIqQQ%3D%3D" target="_blank" rel="noopener">
+        <i class="fab fa-linkedin"></i>
+      </a>
+    </li>
+  
+</ul>
+
+    </div>
+  </div>
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+
+
+
+
+
+  </div>
+</article>
+  </div>
+
+  <div class="page-footer">
+    
+    
+    <div class="container">
+      <footer class="site-footer">
+
+  
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+
+
+
+
+
+  <p class="powered-by">
+    
+    
+    
+      
+      
+      
+      
+      
+      
+      Published with <a href="https://wowchemy.com/?utm_campaign=poweredby" target="_blank" rel="noopener">Wowchemy</a> — the free, <a href="https://github.com/wowchemy/wowchemy-hugo-themes" target="_blank" rel="noopener">open source</a> website builder that empowers creators.
+    
+  </p>
+</footer>
+
+    </div>
+    
+  </div>
+
+  
+<div id="modal" class="modal fade" role="dialog">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Cite</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <pre><code class="tex hljs"></code></pre>
+      </div>
+      <div class="modal-footer">
+        <a class="btn btn-outline-primary my-1 js-copy-cite" href="#" target="_blank">
+          <i class="fas fa-copy"></i> Copy
+        </a>
+        <a class="btn btn-outline-primary my-1 js-download-cite" href="#" target="_blank">
+          <i class="fas fa-download"></i> Download
+        </a>
+        <div id="modal-error"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+      
+
+    
+    <script src="/js/vendor-bundle.min.b73dfaac3b6499dc997741748a7c3fe2.js"></script>
+
+    
+    
+    
+      
+      
+        <script src="https://cdn.jsdelivr.net/gh/desandro/imagesloaded@v4.1.4/imagesloaded.pkgd.min.js" integrity="sha512-S5PZ9GxJZO16tT9r3WJp/Safn31eu8uWrzglMahDT4dsmgqWonRY9grk3j+3tfuPr9WJNsfooOR7Gi7HL5W2jw==" crossorigin="anonymous"></script>
+        <script src="https://cdn.jsdelivr.net/gh/metafizzy/isotope@v3.0.6/dist/isotope.pkgd.min.js" integrity="sha512-Zq2BOxyhvnRFXu0+WE6ojpZLOU2jdnqbrM1hmVdGzyeCa1DgM3X5Q4A/Is9xA1IkbUeDd7755dNNI/PzSf2Pew==" crossorigin="anonymous"></script>
+      
+
+      
+      
+
+      
+
+      
+        
+        <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@10.2.1/build/highlight.min.js" integrity="sha512-Ypjm0o7jOxAd4hpdoppSEN0TQOC19UtPAqD+4s5AlXmUvbmmS/YMxYqAqarQYyxTnB6/rqip9qcxlNB/3U9Wdg==" crossorigin="anonymous"></script>
+        
+        
+        <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@10.2.1/build/languages/r.min.js" crossorigin="anonymous"></script>
+        
+        <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@10.2.1/build/languages/python.min.js" crossorigin="anonymous"></script>
+        
+        <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@10.2.1/build/languages/latex.min.js" crossorigin="anonymous"></script>
+        
+      
+
+    
+
+    
+    
+    
+
+    
+    
+
+    
+    
+    
+      
+      <script id="search-hit-fuse-template" type="text/x-template">
+        <div class="search-hit" id="summary-{{key}}">
+          <div class="search-hit-content">
+            <div class="search-hit-name">
+              <a href="{{relpermalink}}">{{title}}</a>
+              <div class="article-metadata search-hit-type">{{type}}</div>
+              <p class="search-hit-description">{{snippet}}</p>
+            </div>
+          </div>
+        </div>
+      </script>
+      
+        <script src="https://cdn.jsdelivr.net/gh/krisk/Fuse@v3.2.1/dist/fuse.min.js" integrity="sha512-o38bmzBGX+hD3JHWUFCDA09btWaqrNmoJ3RXLlrysA7PP01Kgs4UlE4MhelE1v5dJR3+cxlR4qQlotsW7jKsnw==" crossorigin="anonymous"></script>
+        <script src="https://cdn.jsdelivr.net/gh/julmot/mark.js@8.11.1/dist/jquery.mark.min.js" integrity="sha512-mhbv5DqBMgrWL+32MmsDOt/OAvqr/cHimk6B8y/bx/xS88MVkYGPiVv2ixKVrkywF2qHplNRUvFsAHUdxZ3Krg==" crossorigin="anonymous"></script>
+      
+    
+
+    
+    
+
+    
+    
+    
+    
+
+    
+    
+      
+      
+      
+      
+      
+      
+      
+    
+
+    
+
+    
+    
+    
+    <script id="page-data" type="application/json">{"use_headroom":true}</script>
+
+    
+    
+      <script src="/js/wowchemy-headroom.1cb9e2fc8399acee94eab837265b73bf.js" type="module"></script>
+    
+    
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    <script src="/en/js/wowchemy.min.247fd8f54253895301106e3006f53f38.js"></script>
+
+    
+  <script async defer src="https://buttons.github.io/buttons.js"></script>
+
+
+
+
+</body>
+</html>
