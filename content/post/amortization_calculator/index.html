@@ -1,0 +1,1183 @@
+---
+title: Amortization CalculatoR
+author: Spencer Schien
+date: ''
+slug: creating-amortization-tables-in-r
+categories:
+  - Mortgage Calculator
+tags:
+  - RStats
+subtitle: 'How to Build Amortization Tables in R'
+summary: 'Learn how to build an amortization calculator in R.'
+authors: []
+lastmod: '2020-02-09T21:35:57-06:00'
+featured: no
+image: 
+  caption: ''
+  focal_point: ''
+  preview_only: yes
+projects: []
+math: true
+---
+
+<script src="{{< blogdown/postref >}}index_files/header-attrs/header-attrs.js"></script>
+<script src="{{< blogdown/postref >}}index_files/kePrint/kePrint.js"></script>
+<link href="{{< blogdown/postref >}}index_files/lightable/lightable.css" rel="stylesheet" />
+
+
+<p>{{% alert note %}}
+This post only applies to fixed-rate loans.
+{{% /alert %}}</p>
+<p>Last year, I bought my first house (huzzah!), and as any respectable useR, I decided I had to create my own amortization tables in R. Taking it a step further, I really wanted to know what the effect of extra payments would be.</p>
+<p>Now, I was sure there must be a package already developed to do exactly this, but some quick searching online came up with a lot of web app calculators. I gave up and turned to the learning opportunity that would be writing my own script to accomplish this task.</p>
+<div id="what-the-heck-is-amortization-anyway" class="section level2">
+<h2>What the Heck is Amortization, Anyway?</h2>
+<p>Okay, let’s start out with a big ’ol COA disclaimer right here – I’m no financial advisor, banker, CPA, or even that savvy of an investor. So, I will only provide basic descriptions of financial concepts necessary for us to accomplish the task at hand.</p>
+<p>You want to buy a home, but you only have a portion of the total price. So, you go to a bank to get a loan. The bank will give you all the money to buy the home now if you promise to pay that amount – the principal – plus interest in a certain amount of time. You will make monthly payments that are part interest and part principal payments until the full amount of principal is repaid.</p>
+<p>If you follow the payment schedule, you will pay a certain amount in interest. This interest rate is variable depending on the amount of outstanding principal, which means if you make extra payments towards principal, there is less interest to be paid.</p>
+<p>So, how do you know how much interest you’re paying and how much principal each month? That’s where the amortization table comes in – the table provides the breakdown of interest to principal for each payment. That means our first task is to translate the table calculation into our R script.</p>
+</div>
+<div id="doing-the-math" class="section level2">
+<h2>Doing the Math</h2>
+<div id="total-monthly-payments-principal-interest" class="section level3">
+<h3>Total Monthly Payments (Principal + Interest)</h3>
+<p>The following formula calculates the monthly mortgage payment, which includes both the principal and interest:</p>
+<div>
+<span class="math display">\[LoanAmount\times\frac{(MonthlyRate\times(1+MonthlyRate)^{\text{term}})}{(1+MonthlyRate)^{\text{term}}-1}\]</span>
+</div>
+<p>The code below is the equation translated to R. I’ve also defined the other variables we’ll need with default values.</p>
+<pre class="r"><code># Define the variables
+
+term &lt;- 360 # 30 years in months
+original_loan_amount &lt;- 150000 # $150,000 loan
+annual_rate &lt;- 0.04 # 4% interest rate
+monthly_rate &lt;- annual_rate/12 # rate converted to monthly rate
+
+# Formula to calculate monthly 
+# principal + interest payment
+
+total_PI &lt;- original_loan_amount * 
+   (monthly_rate * (1 + monthly_rate) ^ term)/
+   (((1 + monthly_rate) ^ term) - 1)</code></pre>
+<p>In this example, the total monthly payment (i.e. <code>total_PI</code>) is <span class="math inline">\(\$716.12\)</span>, which when multiplied by the term of the loan results in a total payment amount of <span class="math inline">\(\$257,804.26\)</span> – in other words, over the life of this loan, we’ll be paying <span class="math inline">\(\$107,804.26\)</span> in interest.</p>
+<p>{{% alert note %}}
+Additional monthly payment items such as PMI and escrow are excluded here.
+{{% /alert %}}</p>
+</div>
+<div id="breakdown-of-principal-and-interest-in-each-payment" class="section level3">
+<h3>Breakdown of Principal and Interest in Each Payment</h3>
+<p>The portion of each payment that goes towards the principal – or the original loan amount – is what pays down your loan and builds equity. The portion that goes to interest is the cost you pay for the bank to give you the loan. Basically, the amount of interest you pay each month is determined by multiplying the <code>monthly_rate</code> by the remaining balance of the loan. This number will be less than the <code>total_PI</code>, and whatever the difference is between the two will be the principal portion of the payment.</p>
+<p>Since <code>total_PI</code> is fixed and the interest portion of the payment is a function of the remaining loan balance, as you pay down the loan, the portion that goes to interest decreases, which results in a comparable increase in the portion that goes to principal.</p>
+<p>Now we’re getting very close to being able to create our amortization table. We know what our <code>total_PI</code> is, so now we just need to write code that will calculate the interest and principal portion of each payment, and then calculate the remaining principal.</p>
+<p>The following code will create numberic vectors for each value, with the length of each being set to the term of the loan.</p>
+<pre class="r"><code># Initialize the vectors as numeric with a length equal
+# to the term of the loan.
+
+interest &lt;- principal &lt;- balance &lt;- date &lt;- vector(&quot;numeric&quot;, term)
+
+loan_amount &lt;- original_loan_amount
+# For loop to calculate values for each payment
+
+for (i in 1:term) {
+   intr &lt;- loan_amount * monthly_rate
+   prnp &lt;- total_PI - intr
+   loan_amount &lt;- loan_amount - prnp
+   
+   interest[i] &lt;- intr
+   principal[i] &lt;- prnp
+   balance[i] &lt;- loan_amount
+}
+
+# Throw vectors into a table for easier use
+
+library(tidyverse) # for data manipulation going forward
+
+standard_schedule &lt;- tibble(payment_number = 1:term,
+                            interest,
+                            principal,
+                            balance)
+
+# Print head of standard_schedule
+
+library(knitr) # both libraries for printing tables
+library(kableExtra)
+
+standard_schedule %&gt;%
+  
+  # Format columns to display as dollars
+  
+  modify_at(c(&quot;interest&quot;, &quot;principal&quot;, &quot;balance&quot;), scales::dollar,
+            largest_with_cents = 1e+6) %&gt;%
+  
+  # Limit to first 10 payments
+  
+  head(10) %&gt;% 
+  kable(booktabs = T) %&gt;%
+  kable_styling()</code></pre>
+<table class="table" style="margin-left: auto; margin-right: auto;">
+<thead>
+<tr>
+<th style="text-align:right;">
+payment_number
+</th>
+<th style="text-align:left;">
+interest
+</th>
+<th style="text-align:left;">
+principal
+</th>
+<th style="text-align:left;">
+balance
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:left;">
+$500.00
+</td>
+<td style="text-align:left;">
+$216.12
+</td>
+<td style="text-align:left;">
+$149,783.88
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+2
+</td>
+<td style="text-align:left;">
+$499.28
+</td>
+<td style="text-align:left;">
+$216.84
+</td>
+<td style="text-align:left;">
+$149,567.03
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+3
+</td>
+<td style="text-align:left;">
+$498.56
+</td>
+<td style="text-align:left;">
+$217.57
+</td>
+<td style="text-align:left;">
+$149,349.47
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+4
+</td>
+<td style="text-align:left;">
+$497.83
+</td>
+<td style="text-align:left;">
+$218.29
+</td>
+<td style="text-align:left;">
+$149,131.18
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+5
+</td>
+<td style="text-align:left;">
+$497.10
+</td>
+<td style="text-align:left;">
+$219.02
+</td>
+<td style="text-align:left;">
+$148,912.16
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+6
+</td>
+<td style="text-align:left;">
+$496.37
+</td>
+<td style="text-align:left;">
+$219.75
+</td>
+<td style="text-align:left;">
+$148,692.41
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+7
+</td>
+<td style="text-align:left;">
+$495.64
+</td>
+<td style="text-align:left;">
+$220.48
+</td>
+<td style="text-align:left;">
+$148,471.93
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+8
+</td>
+<td style="text-align:left;">
+$494.91
+</td>
+<td style="text-align:left;">
+$221.22
+</td>
+<td style="text-align:left;">
+$148,250.71
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+9
+</td>
+<td style="text-align:left;">
+$494.17
+</td>
+<td style="text-align:left;">
+$221.95
+</td>
+<td style="text-align:left;">
+$148,028.76
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+10
+</td>
+<td style="text-align:left;">
+$493.43
+</td>
+<td style="text-align:left;">
+$222.69
+</td>
+<td style="text-align:left;">
+$147,806.06
+</td>
+</tr>
+</tbody>
+</table>
+<p>With our payments now calculated for the full term of the loan, we can visualize the interest and principal portions in a line graph.</p>
+<pre class="r"><code># Pivot longer makes it easier to visualize,
+# but isn&#39;t totally necessary
+
+standard_schedule %&gt;%
+  pivot_longer(cols = c(&quot;interest&quot;, &quot;principal&quot;), 
+               names_to = &quot;Payment Portion&quot;, 
+               values_to = &quot;amount&quot;) %&gt;%
+  ggplot(aes(payment_number, amount, color = `Payment Portion`)) +
+  geom_line() +
+  
+  # &#39;#85bb65&#39; is the color of $$$
+  
+  scale_color_manual(values = c(&quot;red&quot;, &quot;#85bb65&quot;)) +
+  
+  # Change the theme for better appearance
+  
+  theme_minimal() +
+  scale_y_continuous(labels = scales::dollar) +
+  labs(title = &quot;Payment Portions of Monthly Mortgage&quot;)</code></pre>
+<p><img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-4-1.png" width="672" /></p>
+<p>Judging from this visual, we can estimate that the portion of each payment going to principal will exceed the portion going to interest at about the 150th payment. To be exact, we can filter the amortization table to find where <code>principal</code> exceeds <code>interest</code> for the first time.</p>
+<pre class="r"><code># Filter for interest less than principal
+
+standard_schedule %&gt;%
+  filter(interest &lt; principal) %&gt;%
+  
+  # Include only the first observation
+  
+  head(1) %&gt;%
+  
+  #  Prettify for table
+  
+  modify_at(c(&quot;interest&quot;, &quot;principal&quot;, &quot;balance&quot;), scales::dollar,
+            largest_with_cents = 1e+6) %&gt;%
+  kable(booktabs = T) %&gt;%
+  kable_styling()</code></pre>
+<table class="table" style="margin-left: auto; margin-right: auto;">
+<thead>
+<tr>
+<th style="text-align:right;">
+payment_number
+</th>
+<th style="text-align:left;">
+interest
+</th>
+<th style="text-align:left;">
+principal
+</th>
+<th style="text-align:left;">
+balance
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:right;">
+153
+</td>
+<td style="text-align:left;">
+$357.72
+</td>
+<td style="text-align:left;">
+$358.41
+</td>
+<td style="text-align:left;">
+$106,956.13
+</td>
+</tr>
+</tbody>
+</table>
+<p>So payment number 153 is the first payment where the portion going to principal is greater than the portion going to interest.</p>
+</div>
+<div id="adding-dates" class="section level3">
+<h3>Adding Dates</h3>
+<p>Now, a natural follow-up question is when will the 153rd payment take place? This is actually an easy question to answer – all we need to do is add a date vector to our table. We will create a variable with the date of the first monthly payment, and then the vector will be a sequence of dates by month for the term of the loan. The following code accomplishes this task.</p>
+<pre class="r"><code>library(lubridate)
+
+# Set first payment date
+
+first_payment &lt;- &quot;2020-01-01&quot;
+
+
+# Add vector as variable to standard schedule
+
+standard_schedule &lt;- standard_schedule %&gt;%
+  mutate(date = seq(from = ymd(first_payment), by = &quot;month&quot;,
+            length.out = term)) %&gt;%
+  select(date, everything())
+
+standard_schedule %&gt;%
+  modify_at(c(&quot;interest&quot;, &quot;principal&quot;, &quot;balance&quot;), scales::dollar,
+          largest_with_cents = 1e+6) %&gt;%
+  head(10) %&gt;%
+  kable(booktabs = T) %&gt;%
+  kable_styling()</code></pre>
+<table class="table" style="margin-left: auto; margin-right: auto;">
+<thead>
+<tr>
+<th style="text-align:left;">
+date
+</th>
+<th style="text-align:right;">
+payment_number
+</th>
+<th style="text-align:left;">
+interest
+</th>
+<th style="text-align:left;">
+principal
+</th>
+<th style="text-align:left;">
+balance
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+2020-01-01
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:left;">
+$500.00
+</td>
+<td style="text-align:left;">
+$216.12
+</td>
+<td style="text-align:left;">
+$149,783.88
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+2020-02-01
+</td>
+<td style="text-align:right;">
+2
+</td>
+<td style="text-align:left;">
+$499.28
+</td>
+<td style="text-align:left;">
+$216.84
+</td>
+<td style="text-align:left;">
+$149,567.03
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+2020-03-01
+</td>
+<td style="text-align:right;">
+3
+</td>
+<td style="text-align:left;">
+$498.56
+</td>
+<td style="text-align:left;">
+$217.57
+</td>
+<td style="text-align:left;">
+$149,349.47
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+2020-04-01
+</td>
+<td style="text-align:right;">
+4
+</td>
+<td style="text-align:left;">
+$497.83
+</td>
+<td style="text-align:left;">
+$218.29
+</td>
+<td style="text-align:left;">
+$149,131.18
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+2020-05-01
+</td>
+<td style="text-align:right;">
+5
+</td>
+<td style="text-align:left;">
+$497.10
+</td>
+<td style="text-align:left;">
+$219.02
+</td>
+<td style="text-align:left;">
+$148,912.16
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+2020-06-01
+</td>
+<td style="text-align:right;">
+6
+</td>
+<td style="text-align:left;">
+$496.37
+</td>
+<td style="text-align:left;">
+$219.75
+</td>
+<td style="text-align:left;">
+$148,692.41
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+2020-07-01
+</td>
+<td style="text-align:right;">
+7
+</td>
+<td style="text-align:left;">
+$495.64
+</td>
+<td style="text-align:left;">
+$220.48
+</td>
+<td style="text-align:left;">
+$148,471.93
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+2020-08-01
+</td>
+<td style="text-align:right;">
+8
+</td>
+<td style="text-align:left;">
+$494.91
+</td>
+<td style="text-align:left;">
+$221.22
+</td>
+<td style="text-align:left;">
+$148,250.71
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+2020-09-01
+</td>
+<td style="text-align:right;">
+9
+</td>
+<td style="text-align:left;">
+$494.17
+</td>
+<td style="text-align:left;">
+$221.95
+</td>
+<td style="text-align:left;">
+$148,028.76
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+2020-10-01
+</td>
+<td style="text-align:right;">
+10
+</td>
+<td style="text-align:left;">
+$493.43
+</td>
+<td style="text-align:left;">
+$222.69
+</td>
+<td style="text-align:left;">
+$147,806.06
+</td>
+</tr>
+</tbody>
+</table>
+<p>Now when we look at the 153rd payment, we see the date is September 01, 2032.</p>
+<pre class="r"><code>standard_schedule %&gt;%
+  filter(interest &lt; principal) %&gt;%
+  head(1) %&gt;%
+  modify_at(c(&quot;interest&quot;, &quot;principal&quot;, &quot;balance&quot;), scales::dollar,
+            largest_with_cents = 1e+6) %&gt;%
+  kable(booktabs = T) %&gt;%
+  kable_styling()</code></pre>
+<table class="table" style="margin-left: auto; margin-right: auto;">
+<thead>
+<tr>
+<th style="text-align:left;">
+date
+</th>
+<th style="text-align:right;">
+payment_number
+</th>
+<th style="text-align:left;">
+interest
+</th>
+<th style="text-align:left;">
+principal
+</th>
+<th style="text-align:left;">
+balance
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+2032-09-01
+</td>
+<td style="text-align:right;">
+153
+</td>
+<td style="text-align:left;">
+$357.72
+</td>
+<td style="text-align:left;">
+$358.41
+</td>
+<td style="text-align:left;">
+$106,956.13
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div id="creating-an-adjusted-schedule" class="section level2">
+<h2>Creating an Adjusted Schedule</h2>
+<p>Next, we will create an adjusted schedule that accounts for both extra monthly and one-time payments towards principal. With these extra payments, the principal will be paid off before the full term of the loan, and you will therefore pay less interest.</p>
+<p>To accomplish this, we will create new variables in our schedule for both extra monthly payments and extra one-time payments. Additionally, we will want to save our adjusted schedule as a different object than <code>standard_schedule</code> so we can compare it to the standard schedule.</p>
+<pre class="r"><code># Create new variables for updated schedule
+
+loan_amount1 &lt;- original_loan_amount
+
+interest1 &lt;- principal1 &lt;- extra &lt;- xtra &lt;- balance1 &lt;- bonus &lt;- NULL
+
+# Set the extra monthly payment amount
+
+for (i in 1:term) {
+  
+  # Stop the for loop when blance is paid off
+  # Otherwise, loop will keep making monthly payments
+  # Also must be sure to round values to 0.00
+  
+  if(loan_amount1 &gt; 0.00) {
+    intr1 &lt;- (loan_amount1 * monthly_rate) %&gt;%
+      
+      # Round to 0.00 for payments
+      
+      round(2)
+    
+    # Last payment won&#39;t be in full
+    
+    prnp1 &lt;- ifelse(loan_amount1 &lt; (total_PI - intr1),
+                    loan_amount1,
+                    total_PI - intr1) %&gt;% round(2)
+    
+    # Last payment won&#39;t need extra payment
+    
+    xtra &lt;- ifelse(loan_amount1 &lt; (total_PI - intr1), 0, 100)
+    
+    loan_amount1 &lt;- (loan_amount1 - prnp1 - xtra) %&gt;%
+      round(2)
+  
+    extra[i] &lt;- xtra
+    interest1[i] &lt;- intr1
+    principal1[i] &lt;- prnp1
+    balance1[i] &lt;- loan_amount1
+  }
+}
+
+# Set new term length 
+
+new_term &lt;- length(balance1)
+
+# Combine in single table
+
+updated_schedule &lt;- tibble(date = seq(from = ymd(first_payment), by = &quot;month&quot;,
+                                      length.out = new_term),
+                          payment_number = 1:new_term,
+                          interest = interest1,
+                          principal = principal1,
+                          extra,
+                          balance = balance1)</code></pre>
+<p>The code above creates the <code>updated_schedule</code> table for us. We can inspect the first ten payments just like we did with the <code>standard_schedule</code>, with the addition of our extra monthly payment.</p>
+<pre class="r"><code>updated_schedule %&gt;%
+  modify_at(c(&quot;interest&quot;, &quot;principal&quot;, &quot;extra&quot;, &quot;balance&quot;), scales::dollar,
+          largest_with_cents = 1e+6) %&gt;%
+  head(10) %&gt;%
+  kable(booktabs = T) %&gt;%
+  kable_styling()</code></pre>
+<table class="table" style="margin-left: auto; margin-right: auto;">
+<thead>
+<tr>
+<th style="text-align:left;">
+date
+</th>
+<th style="text-align:right;">
+payment_number
+</th>
+<th style="text-align:left;">
+interest
+</th>
+<th style="text-align:left;">
+principal
+</th>
+<th style="text-align:left;">
+extra
+</th>
+<th style="text-align:left;">
+balance
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+2020-01-01
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:left;">
+$500.00
+</td>
+<td style="text-align:left;">
+$216.12
+</td>
+<td style="text-align:left;">
+$100
+</td>
+<td style="text-align:left;">
+$149,683.88
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+2020-02-01
+</td>
+<td style="text-align:right;">
+2
+</td>
+<td style="text-align:left;">
+$498.95
+</td>
+<td style="text-align:left;">
+$217.17
+</td>
+<td style="text-align:left;">
+$100
+</td>
+<td style="text-align:left;">
+$149,366.71
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+2020-03-01
+</td>
+<td style="text-align:right;">
+3
+</td>
+<td style="text-align:left;">
+$497.89
+</td>
+<td style="text-align:left;">
+$218.23
+</td>
+<td style="text-align:left;">
+$100
+</td>
+<td style="text-align:left;">
+$149,048.48
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+2020-04-01
+</td>
+<td style="text-align:right;">
+4
+</td>
+<td style="text-align:left;">
+$496.83
+</td>
+<td style="text-align:left;">
+$219.29
+</td>
+<td style="text-align:left;">
+$100
+</td>
+<td style="text-align:left;">
+$148,729.19
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+2020-05-01
+</td>
+<td style="text-align:right;">
+5
+</td>
+<td style="text-align:left;">
+$495.76
+</td>
+<td style="text-align:left;">
+$220.36
+</td>
+<td style="text-align:left;">
+$100
+</td>
+<td style="text-align:left;">
+$148,408.83
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+2020-06-01
+</td>
+<td style="text-align:right;">
+6
+</td>
+<td style="text-align:left;">
+$494.70
+</td>
+<td style="text-align:left;">
+$221.42
+</td>
+<td style="text-align:left;">
+$100
+</td>
+<td style="text-align:left;">
+$148,087.41
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+2020-07-01
+</td>
+<td style="text-align:right;">
+7
+</td>
+<td style="text-align:left;">
+$493.62
+</td>
+<td style="text-align:left;">
+$222.50
+</td>
+<td style="text-align:left;">
+$100
+</td>
+<td style="text-align:left;">
+$147,764.91
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+2020-08-01
+</td>
+<td style="text-align:right;">
+8
+</td>
+<td style="text-align:left;">
+$492.55
+</td>
+<td style="text-align:left;">
+$223.57
+</td>
+<td style="text-align:left;">
+$100
+</td>
+<td style="text-align:left;">
+$147,441.34
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+2020-09-01
+</td>
+<td style="text-align:right;">
+9
+</td>
+<td style="text-align:left;">
+$491.47
+</td>
+<td style="text-align:left;">
+$224.65
+</td>
+<td style="text-align:left;">
+$100
+</td>
+<td style="text-align:left;">
+$147,116.69
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+2020-10-01
+</td>
+<td style="text-align:right;">
+10
+</td>
+<td style="text-align:left;">
+$490.39
+</td>
+<td style="text-align:left;">
+$225.73
+</td>
+<td style="text-align:left;">
+$100
+</td>
+<td style="text-align:left;">
+$146,790.96
+</td>
+</tr>
+</tbody>
+</table>
+<p>We can look at the last ten rows as well to see how our code above works for the last payment.</p>
+<pre class="r"><code>updated_schedule %&gt;%
+  modify_at(c(&quot;interest&quot;, &quot;principal&quot;, &quot;extra&quot;, &quot;balance&quot;), scales::dollar,
+          largest_with_cents = 1e+6) %&gt;%
+  tail(10) %&gt;%
+  kable(booktabs = T) %&gt;%
+  kable_styling()</code></pre>
+<table class="table" style="margin-left: auto; margin-right: auto;">
+<thead>
+<tr>
+<th style="text-align:left;">
+date
+</th>
+<th style="text-align:right;">
+payment_number
+</th>
+<th style="text-align:left;">
+interest
+</th>
+<th style="text-align:left;">
+principal
+</th>
+<th style="text-align:left;">
+extra
+</th>
+<th style="text-align:left;">
+balance
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+2043-01-01
+</td>
+<td style="text-align:right;">
+277
+</td>
+<td style="text-align:left;">
+$24.10
+</td>
+<td style="text-align:left;">
+$692.02
+</td>
+<td style="text-align:left;">
+$100
+</td>
+<td style="text-align:left;">
+$6,436.59
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+2043-02-01
+</td>
+<td style="text-align:right;">
+278
+</td>
+<td style="text-align:left;">
+$21.46
+</td>
+<td style="text-align:left;">
+$694.66
+</td>
+<td style="text-align:left;">
+$100
+</td>
+<td style="text-align:left;">
+$5,641.93
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+2043-03-01
+</td>
+<td style="text-align:right;">
+279
+</td>
+<td style="text-align:left;">
+$18.81
+</td>
+<td style="text-align:left;">
+$697.31
+</td>
+<td style="text-align:left;">
+$100
+</td>
+<td style="text-align:left;">
+$4,844.62
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+2043-04-01
+</td>
+<td style="text-align:right;">
+280
+</td>
+<td style="text-align:left;">
+$16.15
+</td>
+<td style="text-align:left;">
+$699.97
+</td>
+<td style="text-align:left;">
+$100
+</td>
+<td style="text-align:left;">
+$4,044.65
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+2043-05-01
+</td>
+<td style="text-align:right;">
+281
+</td>
+<td style="text-align:left;">
+$13.48
+</td>
+<td style="text-align:left;">
+$702.64
+</td>
+<td style="text-align:left;">
+$100
+</td>
+<td style="text-align:left;">
+$3,242.01
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+2043-06-01
+</td>
+<td style="text-align:right;">
+282
+</td>
+<td style="text-align:left;">
+$10.81
+</td>
+<td style="text-align:left;">
+$705.31
+</td>
+<td style="text-align:left;">
+$100
+</td>
+<td style="text-align:left;">
+$2,436.70
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+2043-07-01
+</td>
+<td style="text-align:right;">
+283
+</td>
+<td style="text-align:left;">
+$8.12
+</td>
+<td style="text-align:left;">
+$708.00
+</td>
+<td style="text-align:left;">
+$100
+</td>
+<td style="text-align:left;">
+$1,628.70
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+2043-08-01
+</td>
+<td style="text-align:right;">
+284
+</td>
+<td style="text-align:left;">
+$5.43
+</td>
+<td style="text-align:left;">
+$710.69
+</td>
+<td style="text-align:left;">
+$100
+</td>
+<td style="text-align:left;">
+$818.01
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+2043-09-01
+</td>
+<td style="text-align:right;">
+285
+</td>
+<td style="text-align:left;">
+$2.73
+</td>
+<td style="text-align:left;">
+$713.39
+</td>
+<td style="text-align:left;">
+$100
+</td>
+<td style="text-align:left;">
+$4.62
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+2043-10-01
+</td>
+<td style="text-align:right;">
+286
+</td>
+<td style="text-align:left;">
+$0.02
+</td>
+<td style="text-align:left;">
+$4.62
+</td>
+<td style="text-align:left;">
+$0
+</td>
+<td style="text-align:left;">
+$0.00
+</td>
+</tr>
+</tbody>
+</table>
+<div id="the-effect-of-extra-payments" class="section level3">
+<h3>The Effect of Extra Payments</h3>
+<p>For the last payment, the interest is calculated as normal, but the principal portion is only the remainder of the balance less the interest instead of the remainder of the <code>total_PI</code> we calculated in the beginning. The extra payment is lowered to zero as well, since it isn’t necessary.</p>
+<p>We now see that by making an extra monthly payment of $100, we will make 74 fewer payments and we will make our final payment on October 01, 2043 instead of December 01, 2049.</p>
+<p>And finally, we will pay $25,205.42 less in interest over the life of the loan, while the amount of principal we pay will remain the same, of course.</p>
+<p>The visual below depicts the resulting savings.</p>
+<pre class="r"><code># Viz is easier if schedules are joined
+# First, create matching variables 
+
+ss &lt;- standard_schedule %&gt;%
+  mutate(schedule = &quot;standard&quot;,
+         extra = 0)
+
+us &lt;- updated_schedule %&gt;%
+  mutate(schedule = &quot;updated&quot;)
+
+both_schedules &lt;- bind_rows(ss, us)
+
+both_schedules %&gt;%
+  group_by(schedule) %&gt;%
+  mutate(cum_int = cumsum(interest),
+            cum_prnp = cumsum(principal)) %&gt;%
+  pivot_longer(cols = c(&quot;cum_int&quot;, &quot;cum_prnp&quot;), 
+               names_to = &quot;Payment Portion&quot;, 
+               values_to = &quot;amount&quot;) %&gt;%
+  filter(`Payment Portion` != &quot;cum_prnp&quot;) %&gt;%
+  ggplot(aes(date, amount, 
+             group = schedule)) +
+  geom_line(aes(linetype = schedule), color = &quot;red&quot;) +
+  
+  # Change the theme for better appearance
+  
+  theme_minimal() +
+  scale_y_continuous(labels = scales::dollar) +
+  scale_linetype_discrete(labels = c(&quot;Standard Schedule&quot;, &quot;Updated Schedule&quot;)) +
+  labs(title = paste(&quot;Amount in Interest Saved: &quot;, scales::dollar(sum(interest) - sum(interest1)), sep = &quot;&quot;),
+       subtitle = paste(&quot;By Paying&quot;, scales::dollar(extra), &quot;Extra Per Month&quot;, sep = &quot; &quot;),
+       y = &quot;Total Interest Paid&quot;,
+       x = &quot;Payment Date&quot;, linetype = &quot;&quot;,
+       caption = paste(&quot;Based on &quot;, scales::dollar(original_loan_amount), &quot; loan over &quot; , (term/12), &quot; years.&quot;, sep = &quot;&quot;)) +
+  guides(linetype = guide_legend(override.aes = list(col = &quot;red&quot;)))</code></pre>
+<p><img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-11-1.png" width="672" /></p>
+</div>
+</div>
