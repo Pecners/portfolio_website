@@ -44,4 +44,4 @@ I have extensive experience in the nonprofit/NGO ecosystem, including a stint as
 
 This website is meant to showcase tools and techniques that have benefited me and my organization in managing data and leveraging technology. Nearly everything discussed here is built on open-source resources, so the main barrier for adoptions is intellectual rather than financial capital. My posts here should provide a leg-up in building that intellectual capital.
 
-Finally, in the past year I've started taking on independent consulting projects. If you'd like to discuss how I might be able to help with your data project, please don't hesitate to reach out (spencer.schien@gmail.com).
+Finally, I've started taking on independent consulting projects. If you'd like to discuss how I might be able to help with your data project, please don't hesitate to reach out (spencer.schien@gmail.com).
