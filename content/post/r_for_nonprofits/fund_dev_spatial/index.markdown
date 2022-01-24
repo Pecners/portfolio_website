@@ -1,0 +1,182 @@
+---
+title: Spatial Analysis in Support of Fund Development
+author: admin
+date: '2020-07-06'
+slug: 
+categories:
+  - R for Nonprofits
+tags:
+  - RStats
+  - Nonprofit
+  - Spatial
+  - Fund Development
+subtitle: ''
+summary: 'Using R for spatial analysis in support of fund development.'
+lastmod: '2020-07-06T14:35:14-05:00'
+featured: no
+image:
+  caption: ''
+  focal_point: ''
+  preview_only: no
+projects: []
+draft: true
+---
+
+
+# Introduction
+
+This post describes a use case for R in support of fund development activities at a nonprofit, specifically using spatial analysis to make a case for funding.
+
+## Funders often focus on place
+
+Many foundations that fund nonprofits have their own priorities they're trying to advance. One such priority is often related to place, such as specific cities, ZIP codes, or even neighborhoods within a city. In fact, these foundations might limit funding to organizations that can prove they serve communities located in those places. It is therefore important to be able to identify the location of your organization's stakeholders.
+
+## Case Study
+
+### The Request
+
+You work at a nonprofit organization in Milwaukee, Wisconsin that supports K-12 schools in the city. Your organization is submitting a grant application to the Fake Foundation, and your fund development team has asked you to provide some data that will help them make a case for funding.
+The Fake Foundation is focused on three specific neighborhoods in Milwaukee, so the request is for data on which schools you support that are located in those three neighborhood.
+
+The three neighborhoods are:
+* Havenwoods
+* Thurston Woods
+* Westlawn
+
+### Your Data
+
+First things first, let's get a handle on where these three neighborhoods are within the city. To do this, we will need spatial data for the city as well as the individual neighborhoods. For a city like Milwaukee, there are officially-recognized neighborhood boundaries, and the city provides shapefiles for both general city limits as well as individual neighborhoods.
+
+If you'd like to follow along with my code, you can download the neighborhood shapefile [here](https://data.milwaukee.gov/dataset/neighborhoods), and you can download the city limits shapefile [here](https://data.milwaukee.gov/dataset/corporate-boundary). Otherwise, you can substitute your own spatial geometries.
+
+{{% alert note %}}
+If you're new to working with shapefiles, one thing to keep in mind is that they come in a folder with other files that contain crucial data. Therefore, you need to maintain the entire folder as you download and move the data. In R, you then read the `.shp` file, as below.
+{{% /alert %}}
+
+We'll be using the `sf` R package for our spatial manipulation operations, plus the `tidyverse` for general operations and visualization. The code below will load the data and plot the three neighborhoods on top of the city limits, giving us a general idea of where the Fake Foundation's focus is.
+
+
+```r
+# Load packages we'll be using
+library(tidyverse)
+library(sf)
+
+# Use `read_sf()` to read in shapefiles
+# Neighborhood boundaries
+
+nbds <- read_sf("data/milwaukee_neighborhood/neighborhood.shp") %>%
+  st_transform(crs = 4326)
+
+# Milwaukee city limits
+
+city <- read_sf("data/milwaukee_citylimit/citylimit.shp") %>%
+  st_transform(crs = 4326)
+
+# Create a vector of the neighborhoods we want--
+# all caps because that's how the data if formatted.
+# Figure this out by inspecting the data with 
+# `glimpse(nbds)`, for instance.
+
+focus <- c("HAVENWOODS",
+           "THURSTON WOODS",
+           "WESTLAWN")
+
+# Filter full `nbds` data for our vector of focus
+
+f_n <- nbds %>%
+  filter(NEIGHBORHD %in% focus) 
+
+# Plot the data, starting with citylimits
+# then adding the neighborhoods
+
+city %>%
+  ggplot() +
+  
+  # Use fill, color, and alpha to easily distinguish between the 
+  # different layers
+  
+  geom_sf(fill = "blue", color = "blue", size = .5, alpha = .5) +
+  geom_sf(data = f_n, fill = "red", color = "red", size = .5, alpha = .5) +
+  
+  # remove theme elements so it's easier to distinguish our polygons
+  
+  theme_void()
+```
+
+<img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-1-1.png" width="672" />
+
+As the plot shows, the focus neighborhoods are contiguous and on the north side of the city. It only looks like we have two neighborhoods plotted, though, when we listed three in our filter. We should have three different red polygons plotted, so what's going on?
+
+Once we inspect the filtered data contained in our `f_n` object, we can quickly see that there we only captured two neighborhoods: Havenwoods and Thurston Woods.
+
+
+```r
+glimpse(f_n)
+```
+
+```
+## Rows: 2
+## Columns: 7
+## $ AREA       <dbl> 23577729, 14911492
+## $ PERIMETER  <dbl> 19528.03, 17302.98
+## $ NBHDTEXT_  <dbl> 22, 100
+## $ NBHDTEXT_I <dbl> 22, 100
+## $ NEIGHBORHD <chr> "HAVENWOODS", "THURSTON WOODS"
+## $ SYMBOL     <int> 4, 1
+## $ geometry   <POLYGON [°]> POLYGON ((-87.96684 43.1322..., POLYGON ((-87.94598 43.1264…
+```
+
+The missing neighborhood is therefore Westlawn, which once we review our full neighborhood data in the `nbds` object, we see that Westlawn isn't listed. **Westlawn therefore is not an officially designated neighborhood**, so we need to find its spatial data somewhere else.
+
+It's not uncommon to run into a scenario where an ad hoc boundary is needed or defined, requiring you to build the geometry yourself. Luckily, this is possible in R, but it does require a bit of legwork first. 
+
+
+### Building a Custom Polygon
+
+There are many ways to build a polygon in R, but one I prefer is to create a dataframe that contains separate columns for latitude and longitude. To get the coordinates, you can use Google Maps, but obviously you need some description of the boundaries. In our case, the Fake Foundation has provided images of their focus neighborhoods. 
+
+![westlawn](data/westlawn.png)
+Using this image, we can approximate the boundaries by pulling the coordinates for the corners from Google Maps. Since we are making a polygon and not a line, we need to make sure it closes, meaning one point will be both the first and the last point. (For `n` polygon sides, you will need `n+1` coordinate pairs.)
+
+Now that we have our points that will define the boundary of the neighborhood, we need to turn it into a spatial object. The code below accomplishes this for us.
+
+
+```r
+westlawn <- tibble(
+  y = c(43.116010, 43.119315, 43.119457, 43.116010, 43.116010),
+  x = c(-87.986190, -87.986190, -87.996060, -87.996060, -87.986190)
+) %>%
+  st_as_sf(., coords = c("x", "y"), crs = 4326) %>%
+  mutate(NEIGHBORHD = "WESTLAWN") %>%
+  group_by(NEIGHBORHD) %>%
+  summarise() %>%
+  st_cast(., to = "POLYGON") 
+```
+
+Let's dig into what's going on here:
+1. The first step is inputting our coordinates into a dataframe (technically a tibble here)
+1. Next we convert our dataframe to a spatial object using `st_as_sf()`
+    * the `crs` argument is important here, and it needs to be the same as the crs for our other neighborhoods (i.e. `4326`)
+1. We create a column to match the name column of our `nbds` object
+1. By grouping by the neighborhood (of which there is only one) and sumarising a spatial object, we are combining the coordinates into a single observation or row
+1. We then cast this sumarised data to a polygon object
+
+This isn't super intuitive, I know, but it has accomplished our task. We can now add the Westlawn geometry to our two other neighborhoods and plot them again.
+
+
+```r
+all_three <- bind_rows(f_n, westlawn)
+
+city %>%
+  ggplot() +
+  geom_sf(fill = "blue", color = "blue", size = .5, alpha = .5) +
+  geom_sf(data = all_three, fill = "red", color = "red", size = .5, alpha = .5) +
+  theme_void()
+```
+
+<img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-4-1.png" width="672" />
+
+We did it! Now, you might be thinking something along the lines of, "Great, we plotted the neighborhoods, but I already knew where they were!" True, but the process of plotting the neighborhoods got us to a point where we have the specific spatial data we need in the format we need. Put another way, ***if we can plot the data, then we can join it with other data.***
+
+For our project here, we're interested in joining this data with school location data. Our next step is to get that data into the appropriate spatial format.
+
