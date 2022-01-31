@@ -8,8 +8,8 @@ light = true
 primary = "#CB4335"
 
 # Menu
-menu_primary = "#dadada"
-menu_text = "#34495e"
+menu_primary = "#dadada" # grey
+menu_text = "#34495e" # dark grey
 menu_text_active = "#CB4335"
 menu_title = "#CB4335"
 
