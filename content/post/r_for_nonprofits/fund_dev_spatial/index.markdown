@@ -12,14 +12,14 @@ tags:
   - Fund Development
 subtitle: ''
 summary: 'Using R for spatial analysis in support of fund development.'
-lastmod: '2022-01-30 18:02:52'
+lastmod: '2022-01-30 18:05:12'
 featured: no
 image:
   caption: ''
   focal_point: ''
   preview_only: no
 projects: []
-draft: true
+draft: false
 ---
 
 
