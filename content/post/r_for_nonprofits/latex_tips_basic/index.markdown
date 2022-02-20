@@ -10,14 +10,14 @@ tags:
   - RMarkdown
 subtitle: ''
 summary: 'Using R for spatial analysis in support of fund development.'
-lastmod: '2022-02-20 10:43:21'
+lastmod: '2022-02-20 10:44:37'
 featured: no
 image:
   caption: ''
   focal_point: ''
   preview_only: yes
 projects: []
-draft: true
+draft: false
 ---
 
 
