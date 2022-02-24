@@ -9,7 +9,7 @@ tags:
   - LaTeX
   - RMarkdown
 subtitle: ''
-summary: 'Using R for spatial analysis in support of fund development.'
+summary: 'Tips for using LaTeX to improve R Markdown PDF Documents.'
 lastmod: '`r Sys.time()`'
 featured: no
 image:
@@ -28,7 +28,7 @@ knitr::opts_chunk$set(
 ```
 
 ## Introduction
-
+ 
 This post is a compilation of LaTeX tricks I've found useful in creating R Markdown PDF documents. In particular, these are techniques I had to research myself because they were not prominently documented in popular R Markdown resources. (Speaking of, I've found [R Markdown: The Definitive Guide](https://bookdown.org/yihui/rmarkdown/) to be an excellent resource.)
 
 For ease of use, here's a list of techniques included in the post: 

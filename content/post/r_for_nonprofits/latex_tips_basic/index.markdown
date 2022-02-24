@@ -1,7 +1,7 @@
 ---
 title: LaTeX Tips for Rmd PDF Documents
 author: admin
-date: '2022-02-20'
+date: '2022-02-24'
 slug: 
 categories:
   - R for Nonprofits
@@ -9,8 +9,8 @@ tags:
   - LaTeX
   - RMarkdown
 subtitle: ''
-summary: 'Using R for spatial analysis in support of fund development.'
-lastmod: '2022-02-20 10:44:37'
+summary: 'Tips for using LaTeX to improve R Markdown PDF Documents.'
+lastmod: '2022-02-24 08:04:26'
 featured: no
 image:
   caption: ''
@@ -23,7 +23,7 @@ draft: false
 
 
 ## Introduction
-
+ 
 This post is a compilation of LaTeX tricks I've found useful in creating R Markdown PDF documents. In particular, these are techniques I had to research myself because they were not prominently documented in popular R Markdown resources. (Speaking of, I've found [R Markdown: The Definitive Guide](https://bookdown.org/yihui/rmarkdown/) to be an excellent resource.)
 
 For ease of use, here's a list of techniques included in the post: 

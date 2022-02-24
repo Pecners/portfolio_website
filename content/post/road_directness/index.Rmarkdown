@@ -1,0 +1,30 @@
+---
+title: Calculating Road Directness in R
+author: admin
+date: '`r Sys.Date()`'
+slug: 
+categories:
+  - RStats
+tags:
+  - RStats
+  - Spatial
+subtitle: ''
+summary: 'Use R to determine the directness or efficiency of roads.'
+lastmod: '`r Sys.time()`'
+featured: no
+image:
+  caption: ''
+  focal_point: ''
+  preview_only: yes
+projects: []
+draft: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+	message = FALSE,
+	warning = FALSE
+)
+```
+
+## Introduction
