@@ -1,14 +1,14 @@
 ---
-title: "Milwaukee Traffic Accident Tracking"
+title: "Milwaukee Traffic Accidents"
 author: admin
-date: '2019-10-02'
+date: '2022-04-02'
 slug: accident-tracking
 categories: 
   - Milwaukee Traffic Accidents
+  - No Code
 tags: 
-  - RStats
   - Milwaukee
-subtitle: "Loading and Cleaning the Data"
+subtitle: ""
 summary: ''
 authors: ["admin"]
 lastmod: '2019-10-02T18:38:03-05:00'
@@ -28,150 +28,15 @@ commentable: true
 knitr::opts_chunk$set(warning = FALSE, message = FALSE)
 ```
 
-This past summer, the Milwaukee Journal Sentinel reported that the Milwaukee Police Department was undertaking an initiative to reduce traffic accidents in Milwaukee by deploying more units to high-risk areas.
+# Introduction
 
-To the data nerds out there (oh, hi!), this was a great opportunity to set up a small project to track the success of MPD's initiative.  For our purposes here, we will make a determination as to whether MPD is having an impact based on whether there is a difference in the number of reported accidents during the period in question when compared to previous comparable periods.
+Placeholder
 
-We can further evaluate whether any subgroups of the data showed any change (e.g. was there a decrease in accident reports during rush hour?) and whether weather (homonym!) shows any predictive value.
+## Trend of Daily Counts
 
-*Note: The `milwaukeer` package developed by [John Johnson](https://johndjohnson.info) facilitates downloading this data and performing some of the data cleaning tasks I'm going to be covering below.  I've opted not to use the `milwaukeer` package here so I can more explicitly explain my process.*
+## Trend by Weekday
 
-## Loading and Assessing the Data
+## Trend by Time of Day
 
-First things first, we need to get the data into R.
-
-```{r}
-library(tidyverse)
-
-raw <- read_csv("https://data.milwaukee.gov/dataset/5fafe01d-dc55-4a41-8760-8ae52f7855f1/resource/8fffaa3a-b500-4561-8898-78a424bdacee/download/trafficaccident.csv")
-```
-
-Now that we have our data loaded, let's take a look at its structure.
-
-```{r}
-glimpse(raw)
-```
-
-With only three variables, this is a pretty simple dataset.  It would seem that `CASENUMBER` is a unique identifier, `CASEDATE` is a timestamp, and `ACCIDENTLOC` is a rough address of the accident.  The addresses are not in a plottable format, nor are they easily coerceable to a Coordinate Reference System (CRS), so effectively, this variable is useless for our purposes.
-
-It would seem to be a safe assumption that each observation represents a different accident report, in which case we could count each observation as an accident.  We need to be sure that there aren't duplicates, though, so lets take a look at this `CASENUMBER` variable.  
-
-If the difference between the number of observations in the data (obtained by using `nrow()`) and the number of unique `CASENUMBER`s is zero, then each observation is in fact a single accident.
-
-```{r}
-unique_cases <- length(
-  unique(raw$CASENUMBER)
-)
-
-nrow(raw) - unique_cases
-```
-
-What we find is that the dataset is 10 rows longer than the number of unique `CASENUMBER`s, so there are duplicates.  Let's take a look at these duplicates to figure out what is going on.
-
-```{r}
-duplicates <- raw %>%
-  group_by(CASENUMBER) %>%
-  summarise(total = n()) %>%
-  filter(total > 1)
-
-raw %>%
-  filter(CASENUMBER %in% duplicates$CASENUMBER) %>%
-  arrange(CASENUMBER)
-  
-```
-
-It's clear that two things are happening here: first, there were some bad observations that were assigned a `CASENUMBER` without a `CASEDATE`, and second, there were observations that were entered twice with the exact same `CASENUMBER` AND `CASEDATE` but a different `ACCIDENTLOC`.  
-
-## Cleaning the Data
-
-This is definitely not a major issue since it's only ten duplicates out of 150,000 observations, but we can still take care of it in a couple easy steps.  
-
-First, since we aren't going to be using the `ACCIDENTLOC` field anyway, we don't care about having two different locations for the same accident.  Dropping that field, we can then call `unique()` on the dataset to eliminate the second case of duplicates listed above.  To eliminate the first case, we can simply filter out `NA` values since they aren't useful to us without a date anyway.  
-
-These steps are quickly achieved with a little `tidyverse` magic:
-
-```{r}
-clean <- raw %>%
-  filter(!is.na(CASEDATE)) %>%
-  select(-ACCIDENTLOC) %>%
-  unique()
-```
-
-Just to make sure we did what we wanted, we can rerun our code from earlier on our `clean` data, as follows:
-
-```{r}
-unique_clean <- length(
-  unique(clean$CASENUMBER)
-)
-
-nrow(clean) - unique_clean
-```
-
-Et voilà! Every row now represents a unique observation of an accident report.
-
-Next, we are going to want to explore trends over the time, and we're going to want to look at it a few different ways.  For instance, we will definitely want to determine what time of day is most accident-prone, what time of year, etc.  This could easily be achieved with the data as it is, but we will want to have some grouping variables to help with sorting and comparison.
-
-The code below creates new fields for `year` and `rush_hour`.  Also, we will load the `lubridate` package to ease our work with datetime data.
-
-```{r}
-library(lubridate)
-
-labeled <- clean %>%
-  mutate(year = year(CASEDATE),
-         rush_hour = ifelse(hour(CASEDATE) > 7 & hour(CASEDATE) < 9, "Morning",
-                            ifelse(hour(CASEDATE) > 16 & hour(CASEDATE) < 18, "Evening",
-                                   "Not Rush Hour")))
-```
-
-Alright, it's time to get to the good stuff--let's visualize this bad boy.  First, let's take a look at daily total accidents over time.
-
-```{r}
-d_hist_v <-labeled %>%
-  group_by(day = floor_date(CASEDATE, "day")) %>%
-  summarise(total = n()) %>%
-  ggplot(aes(day, total)) +
-  geom_histogram(stat = "identity")
-d_hist_v
-```
-
-I like to assign my visuals with a name ending in `_v` so I can easily search them--this can be super helpful on larger projects where you are creating a lot of visuals.
-
-I also like to format my visuals beyond the `ggplot` defaults, as with the code below:
-
-```{r}
-d_hist_v +
-  theme_minimal() +
-  labs(x ="", y= "Daily Count of Accidents", title = "Milwaukee Traffic Accident Reports")
-```
-
-There seems to be positive trend in the number of accident reports, and there also seem to be a few pretty extreme spikes, but the histogram bars are so thin that it's difficult to make out.  
-
-Plotting with `geom_point` makes it easier to identify individual data points, and it will make it a little easier ot evaluate general trends.  We can also add a trend line using `geom_smooth`.
-```{r}
-max_label <- labeled %>%
-              group_by(day = floor_date(CASEDATE, "day")) %>%
-              summarise(total = n()) %>%
-              filter(total == max(total))
-
-d_point_v <-labeled %>%
-  group_by(day = floor_date(CASEDATE, "day")) %>%
-  summarise(total = n()) %>%
-  ggplot(aes(day, total)) +
-  
-  # set alpha below 1 to show overplotting
-  
-  geom_point(alpha = 0.5) +
-  geom_text(data = max_label,
-            aes(label = format(date(day), "%b %d, %Y"), y = total, x = day), nudge_y = 7) +
-  geom_smooth(se = FALSE, color = "red", size = 0.5) +
-  
-  # geom_smooth will extend below zero if we don't set limits
-  
-  scale_y_continuous(limits = c(0, 130)) +
-  theme_minimal() +
-  labs(x ="", y = "Daily Count of Accidents", title = "Milwaukee Traffic Accident Reports",
-       subtitle = "Each point represents a daily total",
-       caption = "Source: data.milwaukee.gov.")
-d_point_v
-```
+## Before and After
 
