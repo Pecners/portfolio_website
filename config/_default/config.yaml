@@ -6,7 +6,7 @@ theme: "starter-hugo-academic"
 
 title: Spencer Schien # Website name
 baseurl: "https://spencerschien.info/" # Website URL
-copyright: '' # Footer text, e.g. '© {year} Me'
+copyright: '© {year} Spencer Schien' # Footer text, e.g. '© {year} Me'
 
 ############################
 ## LANGUAGE
