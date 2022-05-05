@@ -13,6 +13,9 @@ main:
   - name: Gallery
     url: '#gallery'
     weight: 21
+  - name: Shiny
+    url: 'shiny'
+    weight: 22
   - name: Projects
     url: '#projects'
     weight: 30
