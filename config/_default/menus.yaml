@@ -8,17 +8,14 @@ main:
     url: '#about'
     weight: 10
   - name: Posts
-    url: '#posts'
+    url: 'post'
     weight: 20
   - name: Gallery
-    url: '#gallery'
+    url: 'gallery'
     weight: 21
   - name: Shiny
     url: 'shiny'
     weight: 22
-  - name: Projects
-    url: '#projects'
-    weight: 30
   - name: Contact
     url: '#contact'
     weight: 40
