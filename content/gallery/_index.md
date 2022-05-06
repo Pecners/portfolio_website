@@ -7,4 +7,4 @@ title: Gallery
 view: 2
 ---
 
-{{< gallery album="new" >}}
+{{< gallery album="viz" >}}
