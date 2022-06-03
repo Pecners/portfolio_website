@@ -17,4 +17,4 @@ design:
   columns: '3'
 ---
 
-{{< gallery album="newFolder" >}}
+{{< gallery album="dataviz" >}}

@@ -8,6 +8,6 @@ view: 2
 active: false
 ---
 
-{{< gallery album="newFolder" >}}
 
+{{< gallery album="dataviz" >}}
 
