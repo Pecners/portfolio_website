@@ -5,6 +5,9 @@ header:
   image: ""
 title: Gallery
 view: 2
+active: false
 ---
 
-{{< gallery album="another1" >}}
+{{< gallery album="newFolder" >}}
+
+

@@ -17,4 +17,4 @@ design:
   columns: '3'
 ---
 
-{{< gallery album="another1" >}}
+{{< gallery album="newFolder" >}}
