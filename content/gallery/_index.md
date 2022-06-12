@@ -5,9 +5,9 @@ header:
   image: ""
 title: Gallery
 view: 2
-active: false
+active: true
 ---
 
 
-{{< gallery album="dataviz" >}}
+{{< gallery album="ff" >}}
 

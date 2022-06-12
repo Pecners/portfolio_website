@@ -3,6 +3,6 @@ cms_exclude: true
 header:
   caption: ""
   image: ""
-title: Shiny Apps
+title: Interactive
 view: 2
 ---

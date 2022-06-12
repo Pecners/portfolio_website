@@ -13,8 +13,8 @@ main:
   - name: Gallery
     url: 'gallery'
     weight: 21
-  - name: Shiny
-    url: 'shiny'
+  - name: Interactive
+    url: 'interactive'
     weight: 22
   - name: Contact
     url: '#contact'
