@@ -9,5 +9,5 @@ active: true
 ---
 
 
-{{< gallery album="ff" >}}
+{{< gallery album="f" >}}
 
