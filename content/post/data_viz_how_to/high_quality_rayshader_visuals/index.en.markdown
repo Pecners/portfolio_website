@@ -21,7 +21,7 @@ projects: []
 
 This post walks through how to create graphics like the one above using `rayshader`. There is an accompanying GitHub repository with all the necessary code located [here](https://github.com/Pecners/rayshader_tutorial).
 
-Tyler Morgan-Wall -- the author of `rayshader` -- has written pretty extensive reference material (see the [rayshader website](https://www.rayshader.com/)), but I still struggled quite a bit when I left the confines of the pre-written examples. Therefore, I thought it would be helpful to myself and others trying to get started with `rayshader` if I jotted down this tutorial with some of my lessons-learned.
+[Tyler Morgan-Wall](https://twitter.com/tylermorganwall) -- the author of `rayshader` -- has written pretty extensive reference material (see the [rayshader website](https://www.rayshader.com/)), but I still struggled quite a bit when I left the confines of the pre-written examples. Therefore, I thought it would be helpful to myself and others trying to get started with `rayshader` if I jotted down this tutorial with some of my lessons-learned.
 
 {{% alert note %}}
 
