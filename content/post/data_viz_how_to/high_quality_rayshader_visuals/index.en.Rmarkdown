@@ -133,9 +133,9 @@ If we want to take control and customize our graphics, we need to understand how
 
 *Texture* was foreign to me at first, but as the help page states, it's really just a color palette for the plot. The tricky thing here is that it takes a *function* to return a color palette. (You could just pass it a list of colors, but that probably won't be what you're looking for.)
 
-The default assignment is `texture = (grDevices::colorRampPalette(c("#6AA85B", "#D9CC9A", "#FFFFFF")))(256)`. This too might look a bit weird because of the trailing `(256)` -- what's happening here is that `colorRampPalette()` is returning a function, but instead of assigning that function to a separate variable, we're passing it anonymously here and specifying it's only argument as `256`. (You might have encountered this in ggplot's accompanying `scales` package, e.g. `scales::label_comma()(var)`.)
+The default assignment is `texture = (grDevices::colorRampPalette(c("#6AA85B", "#D9CC9A", "#FFFFFF")))(256)`. This too might look a bit weird because of the trailing `(256)` -- what's happening here is that `colorRampPalette()` is returning a function, but instead of assigning that function to a separate variable, we're passing it anonymously here and specifying its only argument as `256`. (You might have encountered this in ggplot's accompanying `scales` package, e.g. `scales::label_comma()(var)`.)
 
-This is creating a palette that is interpolated between three specified color values, and the length out of the palette is 256 (i.e. there will be 256 points along this color palette scale, ranging from one one end to the other). Below are the specified colors.
+This creates a palette that is interpolated between three specified color values, and the length out of the palette is 256 (i.e. there will be 256 points along this color palette scale, ranging from one one end to the other). For instance, below are the specified colors.
 
 ```{r echo=FALSE, eval=TRUE}
 library(tidyverse)
@@ -164,7 +164,7 @@ The `height_shade()` function actually does create a temporary PNG file, which i
 
 Back to rendering -- we already saw a very basic way to render our data using default settings, but let's start customizing. First, let's specify the color palette we want. There are two R packages I like to use for color palettes: `MetBrewer` has a number of great palettes (though not all of them are colorblind-friendly), and `scico` provides scientific color palettes that are perceptually uniform and colorblind-friendly.
 
-For our example graphic, I chose to use `MetBrewer`'s `Demuth` palette, which is colorblind-friendly.
+For our example graphic of the Grand Canyon, I chose to use `MetBrewer`'s `Demuth` palette, which is colorblind-friendly.
 
 ```{r}
 library(MetBrewer)
