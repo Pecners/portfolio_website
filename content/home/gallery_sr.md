@@ -8,7 +8,7 @@ active: true
 headless: true
 
 # Order that this section appears on the page.
-weight: 21
+weight: 20
 
 title: Shaded Relief Gallery
 subtitle:
