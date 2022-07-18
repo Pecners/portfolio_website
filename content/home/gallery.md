@@ -10,11 +10,11 @@ headless: true
 # Order that this section appears on the page.
 weight: 21
 
-title: Gallery
+title: Data Viz Gallery
 subtitle:
 
 design:
   columns: '3'
 ---
 
-{{< gallery album="f" >}}
+{{< gallery album="dv" >}}
