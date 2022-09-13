@@ -147,8 +147,8 @@ search:
 #   api_key: ''
 #   zoom: 15
 marketing:
-  google_analytics: 'UA-151075066-1'
-  google_tag_manager: ''
+  google_analytics: 'G-6VJJR09FSE'
+  google_tag_manager: 
   google_site_verification: ''
   baidu_site_verification: ''
   baidu_tongji: ''
