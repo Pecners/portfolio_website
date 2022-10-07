@@ -10,6 +10,4 @@ active: true
 date: '2022-07-18'
 ---
 
-
 {{< gallery album="dv" >}}
-

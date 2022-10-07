@@ -1,0 +1,212 @@
+---
+title: Including Quarto Template in R Package
+author: admin
+date: '2022-10-06'
+slug: 
+categories:
+  - R for Nonprofits
+tags:
+  - RStats
+  - Nonprofit
+  - Spatial
+  - Fund Development
+subtitle: ''
+summary: 'Include a Quarto template with an R package as you would with R Markdown.'
+lastmod: '2022-10-06 21:16:32'
+featured: no
+image:
+  caption: ''
+  focal_point: ''
+  preview_only: no
+projects: []
+draft: false
+---
+
+
+
+## Introduction
+
+The purpose of this post is to provide a tutorial on how I've managed to translate R Markdown's templating within R packages to the Quarto protocol. Specifically, I wanted to reproduce my workflow for using branded R Markdown PDF reports with the Quarto extension framework.
+
+If you're more of a hands-on learner, I've set up a minimal R package to serve as an example for this tutorial, which you can find here: https://github.com/Pecners/quartotemplate. Install this package yourself with the following code:
+
+
+```r
+remotes::install_github("Pecners/quartotemplate")
+```
+
+{{% alert note %}}
+While I consider myself quite capable with R Markdown, I'm still new to Quarto. So, I might be missing existing functionality that accomplishes the same goals, or my solution here might complicate other Quarto extension functionality. That said, I'm already making use of the framework I lay out below in my professional and personal work, and it's been a great improvement.
+{{% /alert %}}
+
+## How it works
+
+To include R Markdown templates in an R package, you can add the resources to the `inst` sub-directory of the package (i.e. `inst/rmarkdown/templates`). Similarly, we're adding our Quarto extensions and templates to `inst` at `inst/extdata/_extensions`.
+
+### Include resources
+
+For basic branded PDF reports, I include a supplemental `header.tex`, a logo, and a skeleton document that provides a starting point for the report. You could also include other necessary resources like fonts or a full `template.tex` file.
+
+The `header.tex` file included here is pretty simple. It adds a logo to the title page and to the header of subsequent pages. The logo needs to be accessible to the report, which is why we need to include it here. And finally, the skeleton document serves as a template that is copied to the target directory and opened as a starting point for the report. It is beneficial because it has a preset YAML and basic document structure.
+
+For example, below is the `skeleton.qmd` document I've included with the `quartotemplate` package. The benefits of this is that it gives you a standard YAML, setup code chunk with basic packages to load, and a simple document structure.
+
+
+````default
+################
+# skeleton.qmd #
+################
+---
+title: "Your Title"
+author: "Your Name"
+date: "Report Last Run: `r Sys.time()`"
+mainfont: Verdana
+sansfont: Georgia
+format: 
+  pdf:
+    include-in-header: 
+      - header.tex
+---
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
+library(tidyverse)
+library(knitr)
+library(kableExtra)
+library(RColorBrewer)
+library(scales)
+```
+
+## Quarto
+
+Quarto enables you to weave together content and executable code into a finished document. To learn more about Quarto see <https://quarto.org>.
+
+## Running Code
+
+When you click the **Render** button a document will be generated that includes both content and the output of embedded code. You can embed code like this:
+
+```{r}
+1 + 1
+```
+
+\newpage
+You can add options to executable code like this
+
+```{r}
+#| echo: false
+2 * 2
+```
+
+The `echo: false` option disables the printing of code (only output is displayed).
+
+````
+
+## Write a function
+
+Now all that we have to do is write a function that brings this all together. With an R Markdown template, we could use the RStudio menu to create a new R Markdown document from a template, RStudio would create a sub-directory for the report (unless you specify otherwise), and it would open the `Rmd` in the editor based on a `skeleton.Rmd`.
+
+RStudio has abstracted this functionality to the user interface, but we can do the same thing with code using the `rmarkdown::draft()` function. Realizing this is all possible with code, we know we can write our function with the following functionality:
+
+* Copy the extension files into the current working directory so our new report can access them
+* Create a sub-directory for the new report
+* Create a Quarto document by copying `skeleton.qmd` into this location
+* Copy `header.tex` into this location
+
+By copying over `header.tex`, we're making it easier to update the header to suit our needs from report to report.
+
+The function below will accomplish our goals listed above. Note that this code is an extension of code [Thomas Mock](https://twitter.com/thomas_mock) posted [here](https://github.com/jthomasmock/octavo/blob/master/R/use_quarto_ext.R). His code copied over extensions, and my additions make use of the skeleton and create our new report sub-directory.
+
+
+```r
+# `file_name` will be the name of the sub-directory and new qmd report within it
+# `ext_name` needs to name the specific extension
+
+use_quarto_ext <- function(file_name = NULL,
+                           ext_name = "quartotemplate") {
+
+  if (is.null(file_name)) {
+    stop("You must provide a valid file_name")
+  }
+
+  out_dir <- file_name
+
+  if(!dir.exists(out_dir)) {
+    dir.create(out_dir)
+  }
+
+  # check for available extensions
+  stopifnot("Extension not in package" = ext_name %in% c("quartotemplate"))
+
+  # check for existing _extensions directory
+  if(!file.exists("_extensions")) dir.create("_extensions")
+  message("Created '_extensions' folder")
+
+  # various reading of key-value pairs for reporting
+  ext_yml <- readLines(system.file("extdata/_extensions/quartotemplate/_extension.yml",
+                                   package = "quartotemplate"))
+
+  ext_ver <- gsub(
+    x = ext_yml[grepl(x = ext_yml, pattern = "version:")],
+    pattern = "version: ",
+    replacement = ""
+  )
+
+  ext_nm <- gsub(
+    x = ext_yml[grepl(x = ext_yml, pattern = "title:")],
+    pattern = "title: ",
+    replacement = ""
+  )
+
+  # Create folder for recursive copying into ahead of time
+  if(!file.exists(paste0("_extensions/", ext_name))) dir.create(paste0("_extensions/", ext_name))
+
+  # copy from internals
+  file.copy(
+    from = system.file(paste0("extdata/_extensions/", ext_name), package = "quartotemplate"),
+    to = paste0("_extensions/"),
+    overwrite = TRUE,
+    recursive = TRUE,
+    copy.mode = TRUE
+  )
+
+  # logic check to make sure extension files were moved
+  n_files <- length(dir(paste0("_extensions/", ext_name)))
+
+  if(n_files >= 2){
+    message(paste(ext_nm, "v", ext_ver, "was installed to _extensions folder in current working directory."))
+  } else {
+    message("Extension appears not to have been created")
+  }
+
+  # create new qmd report based on skeleton
+  readLines("_extensions/quartotemplate/skeleton.qmd") |>
+    writeLines(text = _,
+               con = paste0(out_dir, "/", file_name, ".qmd", collapse = ""))
+
+  # open the new file in the editor
+  file.edit(paste0(out_dir, "/", file_name, ".qmd", collapse = ""))
+
+  # copy header.tex over as well
+  readLines("_extensions/quartotemplate/header.tex") |>
+    writeLines(text = _, con = paste0(out_dir, "/header.tex"))
+
+}
+```
+
+
+## Make it your own
+
+If you'd like to use this as a starting point to copy over or create your own R Markdown templates, here's how I suggest you go about it:
+
+1. Create your `inst/extdata/_extensions` subdirectory in your package
+1. Create sub-directories from there for your extensions
+1. Add your necessary resources, such as images (e.g. logo), `header.tex` or `template.tex`, etc.
+    - You might need to update file paths if they are referenced in any of these documents, so keep that in mind
+1. Create the skeleton.qmd document in the same location
+    - You can use an existing `skeleton.Rmd` as a starting point. You might need to update the YAML, but code chunks and general markdown text should transfer
+1. Create your own use_quarto_ext() function by copying what I have above. You'll need to update the extension names and file paths.
+
+There's an opportunity to build into this framework a parameter to automatically adjust file paths and extension names, but I haven't built that out for this example. Keep in mind you'll need to manually make those updates.
+
+## Conclusion
+
+There you have it! I hope this was helpful to you. I think Quarto is really great, and it's well worth porting over your Rmd templates. I'd love to hear from you if this proves helpful for you, if you improve upon my solution presented here, or if you know an existing easier way to accomplish this functionality.
