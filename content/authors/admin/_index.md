@@ -17,7 +17,7 @@ highlight_name: true
 organizations:
 - name: City Forward Collective
   url: https://www.cityforwardcollective.org/
-role: Manager of Data & Impact
+role: Senior Manager of Data & Analytics
 social:
 - icon: envelope
   icon_pack: fas
