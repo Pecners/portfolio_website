@@ -25,7 +25,7 @@ This post walks through how to create graphics like the one above using `rayshad
 
 {{% alert note %}}
 
-My original inspiration for these graphics came from Twitter user [@flotsam](https://twitter.com/researchremora)'s posts. They also shared some code that helped me get going. 
+My original inspiration for these graphics came from Twitter user [@researchremora](https://twitter.com/researchremora)'s posts. They also shared some code that helped me get going. 
 
 {{% /alert %}}
 
@@ -68,6 +68,16 @@ Local governments often provide this data as well, so if there is a particular p
 websites. For our purposes here, we'll be using the AWS Terrain Tiles to access elevation data. Lucky for us, the [`elevatr` R package developed by Jeffrey W. Hollister](https://cran.r-project.org/web/packages/elevatr/vignettes/introduction_to_elevatr.html) makes downloading this data a breeze.
 
 # Rendering the base graphic
+
+{{% alert note %}}
+(NOTE ADDED 2023-01-03)
+
+I've received feedback that following the code in this post frequently leads to an error. To avoid this error, download the latest dev version of `rayshader` and `rayrender`.
+
+`remotes::install_github("tylermorganwall/rayshader")`
+`remotes::install_github("tylermorganwall/rayrender")`
+
+{{% /alert %}}
 
 Our first step will be to render the data in 3D, and then we will create a high-quality graphic from there.
 
@@ -122,8 +132,8 @@ First of all, following the examples on the `rayshader` website, we can see that
 
 ```r
 # Plot data with `plot_3d()`
-mat %>%
-  height_shade() %>%
+mat  |> 
+  height_shade() |>
   plot_3d(heightmap = mat)
 
 # Close the window when you're done
@@ -134,9 +144,9 @@ If we want to take control and customize our graphics, we need to understand how
 
 *Texture* was foreign to me at first, but as the help page states, it's really just a color palette for the plot. The tricky thing here is that it takes a *function* to return a color palette. (You could just pass it a list of colors, but that probably won't be what you're looking for.)
 
-The default assignment is `texture = (grDevices::colorRampPalette(c("#6AA85B", "#D9CC9A", "#FFFFFF")))(256)`. This too might look a bit weird because of the trailing `(256)` -- what's happening here is that `colorRampPalette()` is returning a function, but instead of assigning that function to a separate variable, we're passing it anonymously here and specifying it's only argument as `256`. (You might have encountered this in ggplot's accompanying `scales` package, e.g. `scales::label_comma()(var)`.)
+The default assignment is `texture = (grDevices::colorRampPalette(c("#6AA85B", "#D9CC9A", "#FFFFFF")))(256)`. This too might look a bit weird because of the trailing `(256)` -- what's happening here is that `colorRampPalette()` is returning a function, but instead of assigning that function to a separate variable, we're passing it anonymously here and specifying its only argument as `256`. (You might have encountered this in ggplot's accompanying `scales` package, e.g. `scales::label_comma()(var)`.)
 
-This is creating a palette that is interpolated between three specified color values, and the length out of the palette is 256 (i.e. there will be 256 points along this color palette scale, ranging from one one end to the other). Below are the specified colors.
+This creates a palette that is interpolated between three specified color values, and the length out of the palette is 256 (i.e. there will be 256 points along this color palette scale, ranging from one one end to the other). For instance, below are the specified colors.
 
 <img src="{{< blogdown/postref >}}index.en_files/figure-html/unnamed-chunk-5-1.png" width="672" />
 
@@ -150,7 +160,7 @@ The `height_shade()` function actually does create a temporary PNG file, which i
 
 Back to rendering -- we already saw a very basic way to render our data using default settings, but let's start customizing. First, let's specify the color palette we want. There are two R packages I like to use for color palettes: `MetBrewer` has a number of great palettes (though not all of them are colorblind-friendly), and `scico` provides scientific color palettes that are perceptually uniform and colorblind-friendly.
 
-For our example graphic, I chose to use `MetBrewer`'s `Demuth` palette, which is colorblind-friendly.
+For our example graphic of the Grand Canyon, I chose to use `MetBrewer`'s `Demuth` palette, which is colorblind-friendly.
 
 
 ```r
@@ -174,8 +184,8 @@ We don't need to get too crazy here, all we have to do is replace the default co
 # We're finally using the `rayshader` package here, so you'll need to load it
 library(rayshader)
 
-mat %>%
-  height_shade(texture = grDevices::colorRampPalette(colors)(256)) %>%
+mat |>
+  height_shade(texture = grDevices::colorRampPalette(colors)(256)) |>
   plot_3d(heightmap = mat) 
 ```
 
@@ -211,8 +221,8 @@ if (min(c(wr, hr)) < .75) {
 
 rgl::rgl.close()
 
-mat %>%
-  height_shade(texture = grDevices::colorRampPalette(colors)(256)) %>%
+mat |>
+  height_shade(texture = grDevices::colorRampPalette(colors)(256)) |>
   plot_3d(heightmap = mat, 
           windowsize = c(800*wr,800*hr), 
           solid = FALSE, 
@@ -367,6 +377,16 @@ loc_plot <- ggplot() +
 
 loc_plot
 ggsave(loc_plot, filename = glue("plots/gcnp_inset.png"), w = 4*1.5, h = 3*1.5)
+
+# Read plot back in so we can manipulate it
+inset <- image_read(glue("plots/gcnp_inset.png"))
+
+# Scale plot
+new_inset <- image_scale(inset, "x1000")
+
+# Add plot to annotated graphic
+img_ <- image_composite(img_, new_inset, gravity = "east",
+                        offset = "+1200-1000")
 ```
 
 ![](img/with_inset.png)
