@@ -23,13 +23,22 @@ date_format: Jan 2006
 #   Begin multi-line descriptions with YAML's `|2-` multi-line prefix.
 experience:
 
+  - title: Senior Manager of Data & Analytics
+    company: City Forward Collective
+    company_url: 'https://www.cityforwardcollective.org/'
+    company_logo: 
+    location: Milwaukee, WI
+    date_start: '2022-11-28'
+    date_end: ''
+    description: 
+
   - title: Manager of Data & Impact
     company: City Forward Collective
-    company_url: ''
+    company_url: 'https://www.cityforwardcollective.org/'
     company_logo: 
     location: Milwaukee, WI
     date_start: '2018-07-01'
-    date_end: ''
+    date_end: '2022-11-18'
     description: Led three work streams in the roles of Data Manager, Grantmaking Manager, and Salesforce Administrator. 
         
   - title: Program Director for Partner School Services

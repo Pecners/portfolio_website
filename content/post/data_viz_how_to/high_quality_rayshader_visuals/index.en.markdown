@@ -17,6 +17,12 @@ image:
 projects: []
 ---
 
+{{% alert note %}}
+
+Since I wrote this post, I have created a live-coding tutorial on how to use rayshader to create 3D population density maps. Find that tutorial [here](https://youtu.be/zgFXVhmKNbU).
+
+{{% /alert %}}
+
 # Introduction
 
 This post walks through how to create graphics like the one above using `rayshader`. There is an accompanying GitHub repository with all the necessary code located [here](https://github.com/Pecners/rayshader_tutorial).

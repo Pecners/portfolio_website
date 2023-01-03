@@ -28,7 +28,10 @@ social:
   icon_pack: fab
   label: Follow me on Twitter
   link: https://twitter.com/MrPecners
-- icon: youtube
+- display:
+    header: true
+  label: Subscribe to my YouTube channel
+  icon: youtube
   icon_pack: fab
   link: https://www.youtube.com/@MrPecners
 - icon: github
