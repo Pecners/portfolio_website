@@ -27,7 +27,7 @@ This post walks through how to create graphics like the one above using `rayshad
 
 {{% alert note %}}
 
-My original inspiration for these graphics came from Twitter user [@flotsam](https://twitter.com/researchremora)'s posts. They also shared some code that helped me get going. 
+My original inspiration for these graphics came from Twitter user [@researchremora](https://twitter.com/researchremora)'s posts. They also shared some code that helped me get going. 
 
 {{% /alert %}}
 
@@ -69,6 +69,16 @@ Local governments often provide this data as well, so if there is a particular p
 websites. For our purposes here, we'll be using the AWS Terrain Tiles to access elevation data. Lucky for us, the [`elevatr` R package developed by Jeffrey W. Hollister](https://cran.r-project.org/web/packages/elevatr/vignettes/introduction_to_elevatr.html) makes downloading this data a breeze.
 
 # Rendering the base graphic
+
+{{% alert note %}}
+(NOTE ADDED 2023-01-03)
+
+I've received feedback that following the code in this post frequently leads to an error. To avoid this error, download the latest dev version of `rayshader` and `rayrender`.
+
+`remotes::install_github("tylermorganwall/rayshader")`
+`remotes::install_github("tylermorganwall/rayrender")`
+
+{{% /alert %}}
 
 Our first step will be to render the data in 3D, and then we will create a high-quality graphic from there.
 
@@ -121,8 +131,8 @@ First of all, following the examples on the `rayshader` website, we can see that
 
 ```{r}
 # Plot data with `plot_3d()`
-mat %>%
-  height_shade() %>%
+mat  |> 
+  height_shade() |>
   plot_3d(heightmap = mat)
 
 # Close the window when you're done
@@ -143,7 +153,7 @@ tibble(
   x = c(1:3),
   y = 1,
   c = c("#6AA85B", "#D9CC9A", "#FFFFFF")
-) %>%
+) |>
   ggplot(aes(x, y, fill = c)) +
   geom_point(size = 30, shape = 22) +
   geom_text(aes(label = c)) +
@@ -188,8 +198,8 @@ We don't need to get too crazy here, all we have to do is replace the default co
 # We're finally using the `rayshader` package here, so you'll need to load it
 library(rayshader)
 
-mat %>%
-  height_shade(texture = grDevices::colorRampPalette(colors)(256)) %>%
+mat |>
+  height_shade(texture = grDevices::colorRampPalette(colors)(256)) |>
   plot_3d(heightmap = mat) 
 ```
 
@@ -224,8 +234,8 @@ if (min(c(wr, hr)) < .75) {
 
 rgl::rgl.close()
 
-mat %>%
-  height_shade(texture = grDevices::colorRampPalette(colors)(256)) %>%
+mat |>
+  height_shade(texture = grDevices::colorRampPalette(colors)(256)) |>
   plot_3d(heightmap = mat, 
           windowsize = c(800*wr,800*hr), 
           solid = FALSE, 
@@ -375,6 +385,16 @@ loc_plot <- ggplot() +
 
 loc_plot
 ggsave(loc_plot, filename = glue("plots/gcnp_inset.png"), w = 4*1.5, h = 3*1.5)
+
+# Read plot back in so we can manipulate it
+inset <- image_read(glue("plots/gcnp_inset.png"))
+
+# Scale plot
+new_inset <- image_scale(inset, "x1000")
+
+# Add plot to annotated graphic
+img_ <- image_composite(img_, new_inset, gravity = "east",
+                        offset = "+1200-1000")
 ```
 
 ![](img/with_inset.png)
