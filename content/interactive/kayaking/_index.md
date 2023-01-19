@@ -26,7 +26,3 @@ date: 2022-05-04
 <span style='width:100% !important'>
 <iframe src="https://pecners.shinyapps.io/Kayaking/" title="Spencer's Kayaking App"></iframe>
 </span>
-
-<span style='width:75% !important'>
-<iframe src="https://spencerschien.shinyapps.io/ESSER_Funding/" title="ESSER"></iframe>
-</span>
