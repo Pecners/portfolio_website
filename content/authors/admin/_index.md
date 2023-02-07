@@ -29,6 +29,11 @@ social:
   label: Follow me on Twitter
   link: https://twitter.com/MrPecners
 - display:
+  icon: instagram
+  icon_pack: fab
+  label: Follow me on Instagram
+  link: https://www.instagram.com/mrpecners/
+- display:
     header: true
   label: Subscribe to my YouTube channel
   icon: youtube
