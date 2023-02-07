@@ -28,8 +28,7 @@ social:
   icon_pack: fab
   label: Follow me on Twitter
   link: https://twitter.com/MrPecners
-- display:
-  icon: instagram
+- icon: instagram
   icon_pack: fab
   label: Follow me on Instagram
   link: https://www.instagram.com/mrpecners/
