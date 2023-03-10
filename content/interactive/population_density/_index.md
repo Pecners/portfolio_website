@@ -10,12 +10,11 @@ date: 2023-03-10
 
 <style>
   iframe {
-    height:700px;
+    height:500px;
     width:100%;
     border:none;
     margin:0 0 50px 0;
     padding:0;
-    position:absolute;
     left: 0; 
     right: 0; 
     bottom: 20px; 
@@ -23,7 +22,7 @@ date: 2023-03-10
   }
 </style>
 
-![](media/albums/pd/titled_tx_pop_small_hu91a4eca1e00a1dd34783b5fb095791dd_20734665_0x190_resize_q75_h2_lanczos_3.webp)
+![](media/albums/pd/titled_tx_pop_small.png)
 
 <span style='width:100% !important'>
 <iframe src="https://spencerschien.shinyapps.io/shiny_mapdeck/" title="Texas Population Density"></iframe>
