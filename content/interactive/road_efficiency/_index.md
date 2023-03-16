@@ -10,7 +10,7 @@ date: 2023-03-15
 
 <style>
   iframe {
-    height:700px;
+    height:100vh;
     width:100%;
     border:none;
     margin:0 0 50px 0;
