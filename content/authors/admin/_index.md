@@ -24,6 +24,12 @@ social:
   link: /#contact
 - display:
     header: true
+  icon: tiktok
+  icon_pack: fab
+  label: Follow me on TikTok
+  link: https://www.tiktok.com/@mrpecners
+- display:
+    header: true
   icon: twitter
   icon_pack: fab
   label: Follow me on Twitter
