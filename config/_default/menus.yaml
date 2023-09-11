@@ -19,3 +19,6 @@ main:
   - name: Contact
     url: '#contact'
     weight: 40
+  - name: Shop
+    url: 'https://www.rayshadedesigns.com/'
+    weight: 41
