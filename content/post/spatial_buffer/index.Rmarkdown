@@ -1,0 +1,110 @@
+---
+title: Getting Creative with Spatial Buffers
+author: admin
+date: '`r Sys.Date()`'
+slug: 
+categories:
+tags:
+  - RStats
+  - Spatial
+subtitle: ''
+summary: 'Use spatial buffering to create new spatial objects.'
+lastmod: '`r Sys.time()`'
+featured: no
+image:
+  caption: ''
+  focal_point: ''
+  preview_only: no
+projects: []
+draft: false
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+	message = FALSE,
+	warning = FALSE
+)
+```
+
+## Introduction
+
+Have you ever used a function in R for such a long time that you're sure you know how its capabilities, and then you find out you missed a key bit of functionality? This happened to me recently with the `sf::st_buffer()` function--I didn't realize you could limit a buffer to a single side.
+
+The purpose of this post is threefold:
+1. Explain the basic usage of the `sf::st_buffer()` function
+1. Introduce the functionality that I missed (limiting a buffer to one side)
+1. Show usage of that functionality and why it's handy
+
+This post is going to assume you have basic familiarity with the `sf` package. This is a fantastic package that makes it pretty simple to work with spatial data in your tidy workflows--learn more about the package on its website [here]().
+
+## Data prep
+
+I'm going to load the data we'll be using in this post now so we can use it in examples throughout. The examples are going to be based on polling locations in the city of Milwaukee, Wisconsin, and we're also going to make use of road locations. The next few code chunks will get us set up for the rest of the post.
+
+### Load packages
+
+```{r}
+# Code in this post will be using these packages, 
+# let's load them now
+library(tidyverse)
+library(sf)
+library(glue)
+library(tigris)
+```
+
+### Get polling locations
+
+```{r}
+# download polling places for Milwaukee from data.milwaukee.gov
+url <- "https://data.milwaukee.gov/dataset/3c87875e-cf75-4736-a01b-fbf3e889d0b0/resource/a039829e-b578-4ce1-92cc-5ded8bc38c71/download/pollingplace.zip"
+
+destdir <- tempdir()
+utils::download.file(file.path(url), zip_file <- tempfile())
+utils::unzip(zip_file, exdir = destdir)
+
+# list files in `destdir` to see file name
+# list.files()
+
+# read in file
+polls <- st_read(glue("{destdir}/pollingplace.shp")) 
+```
+
+### Milwaukee city limits
+
+```{r}
+# Milwaukee city limits
+wi_places <- tigris::places(state = "wisconsin")
+mke <- wi_places |> 
+  filter(NAME == "Milwaukee")
+```
+
+### Milwaukee roads
+
+```{r}
+# Download roads in Milwaukee using the `tigris` package
+mke_roads <- roads("wisconsin", county = "Milwaukee")
+
+# Filter for interstates
+mke_int <- mke_roads |> 
+  filter(str_detect(FULLNAME, "^I- ")) 
+```
+
+### Review
+
+```{r}
+# Plot the data to get a visual of our data
+mke |> 
+  ggplot() +
+  geom_sf() +
+  geom_sf(data = mke_int) +
+  geom_sf(data = polls, size = .75, color = "red") +
+  theme_void()
+```
+
+## Usage
+
+The `st_buffer()` function creates a buffer around a spatial object. You provide a spatial object, specify the distance of the buffer, and `st_buffer()` adds your specified space between the bounds of the original object to create counts of a new spatial object. This is easy to understand with a couple examples.
+
+```{r}
+
+```
