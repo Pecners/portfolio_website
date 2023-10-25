@@ -339,7 +339,7 @@ se_mke |>
   theme_void()
 ```
 
-Perfect! Now that we have our section of the city defined, we can join with the `polls` data to identify which polling locations are in this area.
+Perfect! Now that we have our section of the city defined, we can join with the `polls` data to identify which polling locations are in this area. 
 
 ```{r}
 # join the polls data with se_mke to ID those polls
