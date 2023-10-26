@@ -28,11 +28,13 @@ knitr::opts_chunk$set(
 
 ## TL;DR
 
-Bisect a spatial polygon with a spatial line using `sf::st_buffer()` with `singleSide=TRUE`. For example, consider a road that runs east-west and bisects a city. Buffer on one side of that road to create a polygon that includes all portions of the city north or south of that road.
+Bisect a spatial polygon with a spatial line using `sf::st_buffer()` with `singleSide=TRUE`. For example, consider a road that runs east-west and bisects a city. Buffer on one side of that road to create a polygon that includes all portions of the city north or south of the road.
+
+If you're familiar with `sf` and `st_buffer()`, skip down to the [What I learned](#learned) section.
 
 ## Introduction
 
-Have you ever used a function in R for such a long time that you're sure you know how its capabilities, and then you find out you missed a key bit of functionality? This happened to me recently with the `sf::st_buffer()` function--I didn't realize you could limit a buffer to a single side.
+Have you ever used a function in R for such a long time that you're sure you know its capabilities, and then you find out you missed a key bit of functionality? This happened to me recently with the `sf::st_buffer()` function--I didn't realize you could limit a buffer to a single side!
 
 The purpose of this post is threefold:
 1. Explain the basic usage of the `sf::st_buffer()` function
@@ -112,7 +114,7 @@ mke |>
 
 ## Usage
 
-The `st_buffer()` function creates a buffer around a spatial object. You provide a spatial object, specify the distance of the buffer, and `st_buffer()` adds your specified space between the bounds of the original object to create counts of a new spatial object. This is easy to understand with a couple examples.
+The `st_buffer()` function creates a buffer around a spatial object. You provide a spatial object, specify the distance of the buffer, and `st_buffer()` adds your specified space between the bounds of the original object to create counts of a new spatial object. This is easy to understand with examples.
 
 ### Points
 
@@ -156,7 +158,7 @@ one_line |>
   geom_sf(color = "blue", linewidth = 1)
 ```
 
-This buffer is doing the same thing as we saw with the point, except it's doing it with every point along the length of the line. The result is that our new buffer polygon extends the `dist` we specified perpendicular to the original line. The width of the new polygon then is 2x `dist`. 
+This buffer is doing the same thing as we saw with the point, except it's doing it along the length of the line. The result is that our new buffer polygon extends the `dist` we specified perpendicular to the original line. The width of the new polygon then is twice what we set for `dist`. 
 
 ### Polygons
 
@@ -176,7 +178,7 @@ mke |>
   geom_sf(fill = "blue")
 ```
 
-This buffer extends the designated `dist` from the boundary line and in that way is similar to the line buffer. One difference with polygon buffers is that we can also do negative distances, with will buffer to the inside, resulting in a smaller polygon than the original.
+This buffer extends the designated `dist` from the boundary line and in that way is similar to the line buffer. One difference with polygon buffers is that we can also do negative distances, which will buffer to the inside, resulting in a smaller polygon than the original.
 
 ```{r}
 # Let's use a negative buffer this time
@@ -190,13 +192,13 @@ mke |>
   geom_sf(data = neg_buff_poly, fill = "yellow")
 ```
 
-Now our plot looks like the border is red and the polygon is blue, but the red actually shows the original polygon (i.e., Milwaukee city limits), and the blue shows a negative buffer, or a buffer inside the polygon.
+Now our plot looks like the border is blue and the polygon is yellow, but the blue actually shows the original polygon (i.e., Milwaukee city limits), and the yellow shows a negative buffer, or a buffer inside the polygon.
 
 ### Units
 
-So far, we have been setting the `dist` argument of `st_buffer()` as a number without mentioning units. You are not required to designate units because `sf` will assume the units based on the Coordinate Reference System (CRS) you are using.
+So far, we have been setting the `dist` argument of `st_buffer()` as a number without mentioning units. You are not required to designate units because `sf` will assume the units based on the Coordinate Reference System (CRS).
 
-You'll notice above that I used `st_transform()` to set the CRS of `mke` and `mke_int` to the same as `poll`. This way, I ensure that all spatial objects are using the same CRS. You can also use `st_crs(polls)` to review the details of the CRS, but a quick way to find out the units is with `st_distance()`, which will return the distance of a line with units.
+You'll notice above when I loaded the data that I used `st_transform()` to set the CRS of `mke` and `mke_int` to the same as `poll`. This way, we ensure that all spatial objects are using the same CRS. You can also use `st_crs(polls)` to review the details of the CRS, but a quick way to find out the units is with `st_distance()`, which will return the distance of a line with units.
 
 ```{r}
 # return the distance of `one_line` with units
@@ -205,9 +207,9 @@ st_distance(one_line)
 
 We see that the unit being used is the US survey foot.
 
-## What I learned
+## What I learned {#learned}
 
-So far, we've reviewed the basics of the `st_buffer()` function. I've gone several years now thinking this function was limited to what I described above, and it has served me well. I recently took the time to read more of the documentation, and I had a minor Eureka! moment. 
+So far, we've reviewed the basics of the `st_buffer()` function. I've gone several years now thinking this function was limited to what I described above, and it has served me well. Recently, though, I took the time to read more of the documentation, and I had a minor *Eureka!* moment. 
 
 In the documentation (see `?sf::st_buffer`), I realized there was an argument I had been overlooking: `singleSide`. The documentation tells us that if this argument is set to `TRUE`, the buffer for a line will be limited to one side of the line. Negative values will buffer on one side, positive on the other. 
 
@@ -294,7 +296,7 @@ two_sided |>
   theme_void()
 ```
 
-This buffer covers all area of city limits east and south of the interstate, but it extends well north and west, too. This won't work for our purposes because an intersection (`st_intersection()`) will include all that area.
+This buffer covers all the area of city limits east and south of the interstate, but it extends well north and west, too. This won't work for our purposes because an intersection (`st_intersection()`) will include all that area.
 
 ```{r}
 # use st_intersection to clip city limits
