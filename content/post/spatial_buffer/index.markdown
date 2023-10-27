@@ -1,7 +1,7 @@
 ---
 title: Getting Creative with Spatial Buffers
 author: admin
-date: '2023-10-25'
+date: '2023-10-27'
 slug: 
 categories:
 tags:
@@ -9,7 +9,7 @@ tags:
   - Spatial
 subtitle: ''
 summary: 'Use spatial buffering to create new spatial objects.'
-lastmod: '2023-10-25 11:42:43'
+lastmod: '2023-10-27 06:40:10'
 featured: no
 image:
   caption: ''
@@ -23,11 +23,13 @@ draft: false
 
 ## TL;DR
 
-Bisect a spatial polygon with a spatial line using `sf::st_buffer()` with `singleSide=TRUE`. For example, consider a road that runs east-west and bisects a city. Buffer on one side of that road to create a polygon that includes all portions of the city north or south of that road.
+Bisect a spatial polygon with a spatial line using `sf::st_buffer()` with `singleSide=TRUE`. For example, consider a road that runs east-west and bisects a city. Buffer on one side of that road to create a polygon that includes all portions of the city north or south of the road.
+
+If you're familiar with `sf` and `st_buffer()`, skip down to the [What I learned](#learned) section.
 
 ## Introduction
 
-Have you ever used a function in R for such a long time that you're sure you know how its capabilities, and then you find out you missed a key bit of functionality? This happened to me recently with the `sf::st_buffer()` function--I didn't realize you could limit a buffer to a single side.
+Have you ever used a function in R for such a long time that you're sure you know its capabilities, and then you find out you missed a key bit of functionality? This happened to me recently with the `sf::st_buffer()` function--I didn't realize you could limit a buffer to a single side!
 
 The purpose of this post is threefold:
 1. Explain the basic usage of the `sf::st_buffer()` function
@@ -72,7 +74,7 @@ polls <- st_read(glue("{destdir}/pollingplace.shp"))
 
 ```
 ## Reading layer `pollingplace' from data source 
-##   `/private/var/folders/91/qhfp3fn13f9411wvjnhhszxc0000gn/T/RtmpbCTxKw/pollingplace.shp' 
+##   `/private/var/folders/91/qhfp3fn13f9411wvjnhhszxc0000gn/T/RtmpoYY0RI/pollingplace.shp' 
 ##   using driver `ESRI Shapefile'
 ## Simple feature collection with 180 features and 7 fields
 ## Geometry type: POINT
@@ -125,7 +127,7 @@ mke |>
 
 ## Usage
 
-The `st_buffer()` function creates a buffer around a spatial object. You provide a spatial object, specify the distance of the buffer, and `st_buffer()` adds your specified space between the bounds of the original object to create counts of a new spatial object. This is easy to understand with a couple examples.
+The `st_buffer()` function creates a buffer around a spatial object. You provide a spatial object, specify the distance of the buffer, and `st_buffer()` adds your specified space between the bounds of the original object to create counts of a new spatial object. This is easy to understand with examples.
 
 ### Points
 
@@ -175,7 +177,7 @@ one_line |>
 
 <img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-7-1.png" width="672" />
 
-This buffer is doing the same thing as we saw with the point, except it's doing it with every point along the length of the line. The result is that our new buffer polygon extends the `dist` we specified perpendicular to the original line. The width of the new polygon then is 2x `dist`. 
+This buffer is doing the same thing as we saw with the point, except it's doing it along the length of the line. The result is that our new buffer polygon extends the `dist` we specified perpendicular to the original line. The width of the new polygon then is twice what we set for `dist`. 
 
 ### Polygons
 
@@ -198,7 +200,7 @@ mke |>
 
 <img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-8-1.png" width="672" />
 
-This buffer extends the designated `dist` from the boundary line and in that way is similar to the line buffer. One difference with polygon buffers is that we can also do negative distances, with will buffer to the inside, resulting in a smaller polygon than the original.
+This buffer extends the designated `dist` from the boundary line and in that way is similar to the line buffer. One difference with polygon buffers is that we can also do negative distances, which will buffer to the inside, resulting in a smaller polygon than the original.
 
 
 ```r
@@ -215,13 +217,13 @@ mke |>
 
 <img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-9-1.png" width="672" />
 
-Now our plot looks like the border is red and the polygon is blue, but the red actually shows the original polygon (i.e., Milwaukee city limits), and the blue shows a negative buffer, or a buffer inside the polygon.
+Now our plot looks like the border is blue and the polygon is yellow, but the blue actually shows the original polygon (i.e., Milwaukee city limits), and the yellow shows a negative buffer, or a buffer inside the polygon.
 
 ### Units
 
-So far, we have been setting the `dist` argument of `st_buffer()` as a number without mentioning units. You are not required to designate units because `sf` will assume the units based on the Coordinate Reference System (CRS) you are using.
+So far, we have been setting the `dist` argument of `st_buffer()` as a number without mentioning units. You are not required to designate units because `sf` will assume the units based on the Coordinate Reference System (CRS).
 
-You'll notice above that I used `st_transform()` to set the CRS of `mke` and `mke_int` to the same as `poll`. This way, I ensure that all spatial objects are using the same CRS. You can also use `st_crs(polls)` to review the details of the CRS, but a quick way to find out the units is with `st_distance()`, which will return the distance of a line with units.
+You'll notice above when I loaded the data that I used `st_transform()` to set the CRS of `mke` and `mke_int` to the same as `poll`. This way, we ensure that all spatial objects are using the same CRS. You can also use `st_crs(polls)` to review the details of the CRS, but a quick way to find out the units is with `st_distance()`, which will return the distance of a line with units.
 
 
 ```r
@@ -237,9 +239,9 @@ st_distance(one_line)
 
 We see that the unit being used is the US survey foot.
 
-## What I learned
+## What I learned {#learned}
 
-So far, we've reviewed the basics of the `st_buffer()` function. I've gone several years now thinking this function was limited to what I described above, and it has served me well. I recently took the time to read more of the documentation, and I had a minor Eureka! moment. 
+So far, we've reviewed the basics of the `st_buffer()` function. I've gone several years now thinking this function was limited to what I described above, and it has served me well. Recently, though, I took the time to read more of the documentation, and I had a minor *Eureka!* moment. 
 
 In the documentation (see `?sf::st_buffer`), I realized there was an argument I had been overlooking: `singleSide`. The documentation tells us that if this argument is set to `TRUE`, the buffer for a line will be limited to one side of the line. Negative values will buffer on one side, positive on the other. 
 
@@ -335,230 +337,13 @@ two_sided |>
   geom_sf(data = mke) +
   # using alpha so we can see underlying boundaries
   geom_sf(color = "yellow", fill = alpha("yellow", .5)) + 
-  geom_sf(data = i43)
+  geom_sf(data = i43) +
+  theme_void()
 ```
 
 <img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-15-1.png" width="672" />
 
-```r
-  theme_void()
-```
-
-```
-## List of 97
-##  $ line                      : list()
-##   ..- attr(*, "class")= chr [1:2] "element_blank" "element"
-##  $ rect                      : list()
-##   ..- attr(*, "class")= chr [1:2] "element_blank" "element"
-##  $ text                      :List of 11
-##   ..$ family       : chr ""
-##   ..$ face         : chr "plain"
-##   ..$ colour       : chr "black"
-##   ..$ size         : num 11
-##   ..$ hjust        : num 0.5
-##   ..$ vjust        : num 0.5
-##   ..$ angle        : num 0
-##   ..$ lineheight   : num 0.9
-##   ..$ margin       : 'margin' num [1:4] 0points 0points 0points 0points
-##   .. ..- attr(*, "unit")= int 8
-##   ..$ debug        : logi FALSE
-##   ..$ inherit.blank: logi TRUE
-##   ..- attr(*, "class")= chr [1:2] "element_text" "element"
-##  $ title                     : NULL
-##  $ aspect.ratio              : NULL
-##  $ axis.title                : list()
-##   ..- attr(*, "class")= chr [1:2] "element_blank" "element"
-##  $ axis.title.x              : NULL
-##  $ axis.title.x.top          : NULL
-##  $ axis.title.x.bottom       : NULL
-##  $ axis.title.y              : NULL
-##  $ axis.title.y.left         : NULL
-##  $ axis.title.y.right        : NULL
-##  $ axis.text                 : list()
-##   ..- attr(*, "class")= chr [1:2] "element_blank" "element"
-##  $ axis.text.x               : NULL
-##  $ axis.text.x.top           : NULL
-##  $ axis.text.x.bottom        : NULL
-##  $ axis.text.y               : NULL
-##  $ axis.text.y.left          : NULL
-##  $ axis.text.y.right         : NULL
-##  $ axis.ticks                : NULL
-##  $ axis.ticks.x              : NULL
-##  $ axis.ticks.x.top          : NULL
-##  $ axis.ticks.x.bottom       : NULL
-##  $ axis.ticks.y              : NULL
-##  $ axis.ticks.y.left         : NULL
-##  $ axis.ticks.y.right        : NULL
-##  $ axis.ticks.length         : 'simpleUnit' num 0points
-##   ..- attr(*, "unit")= int 8
-##  $ axis.ticks.length.x       : NULL
-##  $ axis.ticks.length.x.top   : NULL
-##  $ axis.ticks.length.x.bottom: NULL
-##  $ axis.ticks.length.y       : NULL
-##  $ axis.ticks.length.y.left  : NULL
-##  $ axis.ticks.length.y.right : NULL
-##  $ axis.line                 : NULL
-##  $ axis.line.x               : NULL
-##  $ axis.line.x.top           : NULL
-##  $ axis.line.x.bottom        : NULL
-##  $ axis.line.y               : NULL
-##  $ axis.line.y.left          : NULL
-##  $ axis.line.y.right         : NULL
-##  $ legend.background         : NULL
-##  $ legend.margin             : NULL
-##  $ legend.spacing            : NULL
-##  $ legend.spacing.x          : NULL
-##  $ legend.spacing.y          : NULL
-##  $ legend.key                : NULL
-##  $ legend.key.size           : 'simpleUnit' num 1.2lines
-##   ..- attr(*, "unit")= int 3
-##  $ legend.key.height         : NULL
-##  $ legend.key.width          : NULL
-##  $ legend.text               :List of 11
-##   ..$ family       : NULL
-##   ..$ face         : NULL
-##   ..$ colour       : NULL
-##   ..$ size         : 'rel' num 0.8
-##   ..$ hjust        : NULL
-##   ..$ vjust        : NULL
-##   ..$ angle        : NULL
-##   ..$ lineheight   : NULL
-##   ..$ margin       : NULL
-##   ..$ debug        : NULL
-##   ..$ inherit.blank: logi TRUE
-##   ..- attr(*, "class")= chr [1:2] "element_text" "element"
-##  $ legend.text.align         : NULL
-##  $ legend.title              :List of 11
-##   ..$ family       : NULL
-##   ..$ face         : NULL
-##   ..$ colour       : NULL
-##   ..$ size         : NULL
-##   ..$ hjust        : num 0
-##   ..$ vjust        : NULL
-##   ..$ angle        : NULL
-##   ..$ lineheight   : NULL
-##   ..$ margin       : NULL
-##   ..$ debug        : NULL
-##   ..$ inherit.blank: logi TRUE
-##   ..- attr(*, "class")= chr [1:2] "element_text" "element"
-##  $ legend.title.align        : NULL
-##  $ legend.position           : chr "right"
-##  $ legend.direction          : NULL
-##  $ legend.justification      : NULL
-##  $ legend.box                : NULL
-##  $ legend.box.just           : NULL
-##  $ legend.box.margin         : NULL
-##  $ legend.box.background     : NULL
-##  $ legend.box.spacing        : NULL
-##  $ panel.background          : NULL
-##  $ panel.border              : NULL
-##  $ panel.spacing             : 'simpleUnit' num 5.5points
-##   ..- attr(*, "unit")= int 8
-##  $ panel.spacing.x           : NULL
-##  $ panel.spacing.y           : NULL
-##  $ panel.grid                : NULL
-##  $ panel.grid.major          : NULL
-##  $ panel.grid.minor          : NULL
-##  $ panel.grid.major.x        : NULL
-##  $ panel.grid.major.y        : NULL
-##  $ panel.grid.minor.x        : NULL
-##  $ panel.grid.minor.y        : NULL
-##  $ panel.ontop               : logi FALSE
-##  $ plot.background           : NULL
-##  $ plot.title                :List of 11
-##   ..$ family       : NULL
-##   ..$ face         : NULL
-##   ..$ colour       : NULL
-##   ..$ size         : 'rel' num 1.2
-##   ..$ hjust        : num 0
-##   ..$ vjust        : num 1
-##   ..$ angle        : NULL
-##   ..$ lineheight   : NULL
-##   ..$ margin       : 'margin' num [1:4] 5.5points 0points 0points 0points
-##   .. ..- attr(*, "unit")= int 8
-##   ..$ debug        : NULL
-##   ..$ inherit.blank: logi TRUE
-##   ..- attr(*, "class")= chr [1:2] "element_text" "element"
-##  $ plot.title.position       : chr "panel"
-##  $ plot.subtitle             :List of 11
-##   ..$ family       : NULL
-##   ..$ face         : NULL
-##   ..$ colour       : NULL
-##   ..$ size         : NULL
-##   ..$ hjust        : num 0
-##   ..$ vjust        : num 1
-##   ..$ angle        : NULL
-##   ..$ lineheight   : NULL
-##   ..$ margin       : 'margin' num [1:4] 5.5points 0points 0points 0points
-##   .. ..- attr(*, "unit")= int 8
-##   ..$ debug        : NULL
-##   ..$ inherit.blank: logi TRUE
-##   ..- attr(*, "class")= chr [1:2] "element_text" "element"
-##  $ plot.caption              :List of 11
-##   ..$ family       : NULL
-##   ..$ face         : NULL
-##   ..$ colour       : NULL
-##   ..$ size         : 'rel' num 0.8
-##   ..$ hjust        : num 1
-##   ..$ vjust        : num 1
-##   ..$ angle        : NULL
-##   ..$ lineheight   : NULL
-##   ..$ margin       : 'margin' num [1:4] 5.5points 0points 0points 0points
-##   .. ..- attr(*, "unit")= int 8
-##   ..$ debug        : NULL
-##   ..$ inherit.blank: logi TRUE
-##   ..- attr(*, "class")= chr [1:2] "element_text" "element"
-##  $ plot.caption.position     : chr "panel"
-##  $ plot.tag                  :List of 11
-##   ..$ family       : NULL
-##   ..$ face         : NULL
-##   ..$ colour       : NULL
-##   ..$ size         : 'rel' num 1.2
-##   ..$ hjust        : num 0.5
-##   ..$ vjust        : num 0.5
-##   ..$ angle        : NULL
-##   ..$ lineheight   : NULL
-##   ..$ margin       : NULL
-##   ..$ debug        : NULL
-##   ..$ inherit.blank: logi TRUE
-##   ..- attr(*, "class")= chr [1:2] "element_text" "element"
-##  $ plot.tag.position         : chr "topleft"
-##  $ plot.margin               : 'simpleUnit' num [1:4] 0lines 0lines 0lines 0lines
-##   ..- attr(*, "unit")= int 3
-##  $ strip.background          : NULL
-##  $ strip.background.x        : NULL
-##  $ strip.background.y        : NULL
-##  $ strip.clip                : chr "inherit"
-##  $ strip.placement           : NULL
-##  $ strip.text                :List of 11
-##   ..$ family       : NULL
-##   ..$ face         : NULL
-##   ..$ colour       : NULL
-##   ..$ size         : 'rel' num 0.8
-##   ..$ hjust        : NULL
-##   ..$ vjust        : NULL
-##   ..$ angle        : NULL
-##   ..$ lineheight   : NULL
-##   ..$ margin       : NULL
-##   ..$ debug        : NULL
-##   ..$ inherit.blank: logi TRUE
-##   ..- attr(*, "class")= chr [1:2] "element_text" "element"
-##  $ strip.text.x              : NULL
-##  $ strip.text.x.bottom       : NULL
-##  $ strip.text.x.top          : NULL
-##  $ strip.text.y              : NULL
-##  $ strip.text.y.left         : NULL
-##  $ strip.text.y.right        : NULL
-##  $ strip.switch.pad.grid     : 'simpleUnit' num 2.75points
-##   ..- attr(*, "unit")= int 8
-##  $ strip.switch.pad.wrap     : 'simpleUnit' num 2.75points
-##   ..- attr(*, "unit")= int 8
-##  - attr(*, "class")= chr [1:2] "theme" "gg"
-##  - attr(*, "complete")= logi TRUE
-##  - attr(*, "validate")= logi TRUE
-```
-
-This buffer covers all area of city limits east and south of the interstate, but it extends well north and west, too. This won't work for our purposes because an intersection (`st_intersection()`) will include all that area.
+This buffer covers all the area of city limits east and south of the interstate, but it extends well north and west, too. This won't work for our purposes because an intersection (`st_intersection()`) will include all that area.
 
 
 ```r
@@ -589,228 +374,11 @@ single_sided |>
   geom_sf(data = mke) +
   # using alpha so we can see underlying boundaries
   geom_sf(color = "yellow", fill = alpha("yellow", .5)) + 
-  geom_sf(data = i43)
-```
-
-<img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-17-1.png" width="672" />
-
-```r
+  geom_sf(data = i43) +
   theme_void()
 ```
 
-```
-## List of 97
-##  $ line                      : list()
-##   ..- attr(*, "class")= chr [1:2] "element_blank" "element"
-##  $ rect                      : list()
-##   ..- attr(*, "class")= chr [1:2] "element_blank" "element"
-##  $ text                      :List of 11
-##   ..$ family       : chr ""
-##   ..$ face         : chr "plain"
-##   ..$ colour       : chr "black"
-##   ..$ size         : num 11
-##   ..$ hjust        : num 0.5
-##   ..$ vjust        : num 0.5
-##   ..$ angle        : num 0
-##   ..$ lineheight   : num 0.9
-##   ..$ margin       : 'margin' num [1:4] 0points 0points 0points 0points
-##   .. ..- attr(*, "unit")= int 8
-##   ..$ debug        : logi FALSE
-##   ..$ inherit.blank: logi TRUE
-##   ..- attr(*, "class")= chr [1:2] "element_text" "element"
-##  $ title                     : NULL
-##  $ aspect.ratio              : NULL
-##  $ axis.title                : list()
-##   ..- attr(*, "class")= chr [1:2] "element_blank" "element"
-##  $ axis.title.x              : NULL
-##  $ axis.title.x.top          : NULL
-##  $ axis.title.x.bottom       : NULL
-##  $ axis.title.y              : NULL
-##  $ axis.title.y.left         : NULL
-##  $ axis.title.y.right        : NULL
-##  $ axis.text                 : list()
-##   ..- attr(*, "class")= chr [1:2] "element_blank" "element"
-##  $ axis.text.x               : NULL
-##  $ axis.text.x.top           : NULL
-##  $ axis.text.x.bottom        : NULL
-##  $ axis.text.y               : NULL
-##  $ axis.text.y.left          : NULL
-##  $ axis.text.y.right         : NULL
-##  $ axis.ticks                : NULL
-##  $ axis.ticks.x              : NULL
-##  $ axis.ticks.x.top          : NULL
-##  $ axis.ticks.x.bottom       : NULL
-##  $ axis.ticks.y              : NULL
-##  $ axis.ticks.y.left         : NULL
-##  $ axis.ticks.y.right        : NULL
-##  $ axis.ticks.length         : 'simpleUnit' num 0points
-##   ..- attr(*, "unit")= int 8
-##  $ axis.ticks.length.x       : NULL
-##  $ axis.ticks.length.x.top   : NULL
-##  $ axis.ticks.length.x.bottom: NULL
-##  $ axis.ticks.length.y       : NULL
-##  $ axis.ticks.length.y.left  : NULL
-##  $ axis.ticks.length.y.right : NULL
-##  $ axis.line                 : NULL
-##  $ axis.line.x               : NULL
-##  $ axis.line.x.top           : NULL
-##  $ axis.line.x.bottom        : NULL
-##  $ axis.line.y               : NULL
-##  $ axis.line.y.left          : NULL
-##  $ axis.line.y.right         : NULL
-##  $ legend.background         : NULL
-##  $ legend.margin             : NULL
-##  $ legend.spacing            : NULL
-##  $ legend.spacing.x          : NULL
-##  $ legend.spacing.y          : NULL
-##  $ legend.key                : NULL
-##  $ legend.key.size           : 'simpleUnit' num 1.2lines
-##   ..- attr(*, "unit")= int 3
-##  $ legend.key.height         : NULL
-##  $ legend.key.width          : NULL
-##  $ legend.text               :List of 11
-##   ..$ family       : NULL
-##   ..$ face         : NULL
-##   ..$ colour       : NULL
-##   ..$ size         : 'rel' num 0.8
-##   ..$ hjust        : NULL
-##   ..$ vjust        : NULL
-##   ..$ angle        : NULL
-##   ..$ lineheight   : NULL
-##   ..$ margin       : NULL
-##   ..$ debug        : NULL
-##   ..$ inherit.blank: logi TRUE
-##   ..- attr(*, "class")= chr [1:2] "element_text" "element"
-##  $ legend.text.align         : NULL
-##  $ legend.title              :List of 11
-##   ..$ family       : NULL
-##   ..$ face         : NULL
-##   ..$ colour       : NULL
-##   ..$ size         : NULL
-##   ..$ hjust        : num 0
-##   ..$ vjust        : NULL
-##   ..$ angle        : NULL
-##   ..$ lineheight   : NULL
-##   ..$ margin       : NULL
-##   ..$ debug        : NULL
-##   ..$ inherit.blank: logi TRUE
-##   ..- attr(*, "class")= chr [1:2] "element_text" "element"
-##  $ legend.title.align        : NULL
-##  $ legend.position           : chr "right"
-##  $ legend.direction          : NULL
-##  $ legend.justification      : NULL
-##  $ legend.box                : NULL
-##  $ legend.box.just           : NULL
-##  $ legend.box.margin         : NULL
-##  $ legend.box.background     : NULL
-##  $ legend.box.spacing        : NULL
-##  $ panel.background          : NULL
-##  $ panel.border              : NULL
-##  $ panel.spacing             : 'simpleUnit' num 5.5points
-##   ..- attr(*, "unit")= int 8
-##  $ panel.spacing.x           : NULL
-##  $ panel.spacing.y           : NULL
-##  $ panel.grid                : NULL
-##  $ panel.grid.major          : NULL
-##  $ panel.grid.minor          : NULL
-##  $ panel.grid.major.x        : NULL
-##  $ panel.grid.major.y        : NULL
-##  $ panel.grid.minor.x        : NULL
-##  $ panel.grid.minor.y        : NULL
-##  $ panel.ontop               : logi FALSE
-##  $ plot.background           : NULL
-##  $ plot.title                :List of 11
-##   ..$ family       : NULL
-##   ..$ face         : NULL
-##   ..$ colour       : NULL
-##   ..$ size         : 'rel' num 1.2
-##   ..$ hjust        : num 0
-##   ..$ vjust        : num 1
-##   ..$ angle        : NULL
-##   ..$ lineheight   : NULL
-##   ..$ margin       : 'margin' num [1:4] 5.5points 0points 0points 0points
-##   .. ..- attr(*, "unit")= int 8
-##   ..$ debug        : NULL
-##   ..$ inherit.blank: logi TRUE
-##   ..- attr(*, "class")= chr [1:2] "element_text" "element"
-##  $ plot.title.position       : chr "panel"
-##  $ plot.subtitle             :List of 11
-##   ..$ family       : NULL
-##   ..$ face         : NULL
-##   ..$ colour       : NULL
-##   ..$ size         : NULL
-##   ..$ hjust        : num 0
-##   ..$ vjust        : num 1
-##   ..$ angle        : NULL
-##   ..$ lineheight   : NULL
-##   ..$ margin       : 'margin' num [1:4] 5.5points 0points 0points 0points
-##   .. ..- attr(*, "unit")= int 8
-##   ..$ debug        : NULL
-##   ..$ inherit.blank: logi TRUE
-##   ..- attr(*, "class")= chr [1:2] "element_text" "element"
-##  $ plot.caption              :List of 11
-##   ..$ family       : NULL
-##   ..$ face         : NULL
-##   ..$ colour       : NULL
-##   ..$ size         : 'rel' num 0.8
-##   ..$ hjust        : num 1
-##   ..$ vjust        : num 1
-##   ..$ angle        : NULL
-##   ..$ lineheight   : NULL
-##   ..$ margin       : 'margin' num [1:4] 5.5points 0points 0points 0points
-##   .. ..- attr(*, "unit")= int 8
-##   ..$ debug        : NULL
-##   ..$ inherit.blank: logi TRUE
-##   ..- attr(*, "class")= chr [1:2] "element_text" "element"
-##  $ plot.caption.position     : chr "panel"
-##  $ plot.tag                  :List of 11
-##   ..$ family       : NULL
-##   ..$ face         : NULL
-##   ..$ colour       : NULL
-##   ..$ size         : 'rel' num 1.2
-##   ..$ hjust        : num 0.5
-##   ..$ vjust        : num 0.5
-##   ..$ angle        : NULL
-##   ..$ lineheight   : NULL
-##   ..$ margin       : NULL
-##   ..$ debug        : NULL
-##   ..$ inherit.blank: logi TRUE
-##   ..- attr(*, "class")= chr [1:2] "element_text" "element"
-##  $ plot.tag.position         : chr "topleft"
-##  $ plot.margin               : 'simpleUnit' num [1:4] 0lines 0lines 0lines 0lines
-##   ..- attr(*, "unit")= int 3
-##  $ strip.background          : NULL
-##  $ strip.background.x        : NULL
-##  $ strip.background.y        : NULL
-##  $ strip.clip                : chr "inherit"
-##  $ strip.placement           : NULL
-##  $ strip.text                :List of 11
-##   ..$ family       : NULL
-##   ..$ face         : NULL
-##   ..$ colour       : NULL
-##   ..$ size         : 'rel' num 0.8
-##   ..$ hjust        : NULL
-##   ..$ vjust        : NULL
-##   ..$ angle        : NULL
-##   ..$ lineheight   : NULL
-##   ..$ margin       : NULL
-##   ..$ debug        : NULL
-##   ..$ inherit.blank: logi TRUE
-##   ..- attr(*, "class")= chr [1:2] "element_text" "element"
-##  $ strip.text.x              : NULL
-##  $ strip.text.x.bottom       : NULL
-##  $ strip.text.x.top          : NULL
-##  $ strip.text.y              : NULL
-##  $ strip.text.y.left         : NULL
-##  $ strip.text.y.right        : NULL
-##  $ strip.switch.pad.grid     : 'simpleUnit' num 2.75points
-##   ..- attr(*, "unit")= int 8
-##  $ strip.switch.pad.wrap     : 'simpleUnit' num 2.75points
-##   ..- attr(*, "unit")= int 8
-##  - attr(*, "class")= chr [1:2] "theme" "gg"
-##  - attr(*, "complete")= logi TRUE
-##  - attr(*, "validate")= logi TRUE
-```
+<img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-17-1.png" width="672" />
 
 That gives us what we want! Now we can use that buffer polygon to intersect with the city polygon to create a new polygon that represents the portion of the city east and south of Interstate 43.
 
@@ -829,7 +397,7 @@ se_mke |>
 
 <img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-18-1.png" width="672" />
 
-Perfect! Now that we have our section of the city defined, we can join with the `polls` data to identify which polling locations are in this area.
+Perfect! Now that we have our section of the city defined, we can join with the `polls` data to identify which polling locations are in this area. 
 
 
 ```r
